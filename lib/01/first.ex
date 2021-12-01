@@ -1,4 +1,4 @@
-defmodule Aoc2021.Day1 do
+defmodule Aoc2021.Day1.First do
   def run(file) do
     file
     |> input()
@@ -13,6 +13,7 @@ defmodule Aoc2021.Day1 do
       depth, {_last, increases} ->
         {depth, increases}
     end)
+    |> elem(1)
   end
 
   def input(file) do
@@ -21,11 +22,3 @@ defmodule Aoc2021.Day1 do
     |> Stream.map(&String.trim/1)
   end
 end
-
-"test_input.txt"
-|> Aoc2021.Day1.run()
-|> IO.inspect()
-
-"input.txt"
-|> Aoc2021.Day1.run()
-|> IO.inspect()
