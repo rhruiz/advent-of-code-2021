@@ -25,6 +25,7 @@ defmodule Aoc2021.Day1.Second do
       depth, {_last, increases} ->
         {depth, increases}
     end)
+    |> elem(1)
   end
 
   def sliding_sum([first, second, third | tail], nil, increases) do
