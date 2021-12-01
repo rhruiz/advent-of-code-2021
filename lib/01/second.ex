@@ -31,7 +31,8 @@ defmodule Aoc2021.Day1.Second do
     sliding_sum([second, third | tail], first + second + third, increases)
   end
 
-  def sliding_sum([first, second, third | tail], last, increases) when first + second + third > last do
+  def sliding_sum([first, second, third | tail], last, increases)
+      when first + second + third > last do
     sliding_sum([second, third | tail], first + second + third, increases + 1)
   end
 
