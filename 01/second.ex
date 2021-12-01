@@ -2,8 +2,29 @@ defmodule Aoc2021.Day1 do
   def run(file) do
     file
     |> input()
-    |> Enum.map(&String.to_integer/1)
+    |> Enum.into([])
     |> sliding_sum(nil, 0)
+  end
+
+  def as_streams(file) do
+    0..2
+    |> Stream.map(fn offset ->
+      file
+      |> input()
+      |> Stream.drop(offset)
+    end)
+    |> Stream.zip()
+    |> Stream.map(fn {a, b, c} -> a + b + c end)
+    |> Enum.reduce({nil, 0}, fn
+      depth, {nil, increases} ->
+        {depth, increases}
+
+      depth, {last, increases} when depth > last ->
+        {depth, increases + 1}
+
+      depth, {_last, increases} ->
+        {depth, increases}
+    end)
   end
 
   def sliding_sum([first, second, third | tail], nil, increases) do
@@ -26,6 +47,7 @@ defmodule Aoc2021.Day1 do
     file
     |> File.stream!()
     |> Stream.map(&String.trim/1)
+    |> Stream.map(&String.to_integer/1)
   end
 end
 
@@ -33,6 +55,14 @@ end
 |> Aoc2021.Day1.run()
 |> IO.inspect()
 
+"test_input.txt"
+|> Aoc2021.Day1.as_streams()
+|> IO.inspect()
+
 "input.txt"
 |> Aoc2021.Day1.run()
+|> IO.inspect()
+
+"input.txt"
+|> Aoc2021.Day1.as_streams()
 |> IO.inspect()
