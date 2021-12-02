@@ -9,6 +9,7 @@ defmodule Aoc2021.Day2.Second do
       {:forward, dx}, {x, y, aim} ->
         {x + dx, y + aim * dx, aim}
     end)
+    |> then(fn {x, y, _aim} -> {x, y} end)
   end
 
   def input(file) do
