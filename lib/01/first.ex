@@ -16,6 +16,14 @@ defmodule Aoc2021.Day1.First do
     |> elem(1)
   end
 
+  def no_reduce(file) do
+    file
+    |> input()
+    |> Stream.map(&String.to_integer/1)
+    |> Stream.chunk_every(2, 1, :discard)
+    |> Enum.count(fn [a, b] -> b > a end)
+  end
+
   def input(file) do
     file
     |> File.stream!()
