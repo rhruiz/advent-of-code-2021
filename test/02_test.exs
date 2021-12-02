@@ -9,7 +9,7 @@ defmodule Aoc2021.Day2Test do
 
     test "with puzzle data" do
       {x, y} = Aoc2021.Day2.First.run("test/support/02/input.txt")
-      assert 1855814 == x * y
+      assert 1_855_814 == x * y
     end
   end
 
@@ -21,7 +21,7 @@ defmodule Aoc2021.Day2Test do
 
     test "with puzzle data" do
       {x, y} = Aoc2021.Day2.Second.run("test/support/02/input.txt")
-      assert 1845455714 == x * y
+      assert 1_845_455_714 == x * y
     end
   end
 end
