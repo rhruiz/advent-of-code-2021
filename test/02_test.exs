@@ -1,26 +1,26 @@
 defmodule Aoc2021.Day2Test do
-  use ExUnit.Case, async: true
+  use TestCase, async: true
 
   describe "first star" do
     test "with test data" do
-      {x, y} = Aoc2021.Day2.First.run("test/support/02/test_input.txt")
+      {x, y} = First.run(test_input())
       assert 150 == x * y
     end
 
     test "with puzzle data" do
-      {x, y} = Aoc2021.Day2.First.run("test/support/02/input.txt")
+      {x, y} = First.run(input())
       assert 1_855_814 == x * y
     end
   end
 
   describe "second star" do
     test "with test data" do
-      {x, y} = Aoc2021.Day2.Second.run("test/support/02/test_input.txt")
+      {x, y} = Second.run(test_input())
       assert 900 == x * y
     end
 
     test "with puzzle data" do
-      {x, y} = Aoc2021.Day2.Second.run("test/support/02/input.txt")
+      {x, y} = Second.run(input())
       assert 1_845_455_714 == x * y
     end
   end
