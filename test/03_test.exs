@@ -13,4 +13,16 @@ defmodule Aoc2021.Day3Test do
       assert 2_967_914 == x * y
     end
   end
+
+  describe "second star" do
+    test "with test data" do
+      assert {23, 10} == Second.run(test_input())
+    end
+
+    test "with puzzle data" do
+      {oxygen, co2} = Second.run(input())
+
+      assert 7_041_258 = oxygen * co2
+    end
+  end
 end
