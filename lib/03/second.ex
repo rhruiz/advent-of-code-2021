@@ -11,18 +11,16 @@ defmodule Aoc2021.Day3.Second do
         |> Enum.map(&String.to_integer/1)
       end)
 
-    {
-      readings |> find_reading(&Kernel.==/2) |> from_binary(),
-      readings |> find_reading(&Kernel.!=/2) |> from_binary()
-    }
+    oxygen = find_reading(readings, &Kernel.==/2)
+    co2 = find_reading(readings, &Kernel.!=/2)
+
+    {from_binary(oxygen), from_binary(co2)}
   end
 
   def most_common(readings, position) do
-    count = length(readings)
-
-    sum =
-      Enum.reduce(readings, 0, fn line, sum ->
-        sum + Enum.at(line, position)
+    {count, sum} =
+      Enum.reduce(readings, {0, 0}, fn line, {count, sum} ->
+        {count + 1, sum + Enum.at(line, position)}
       end)
 
     if(sum >= count / 2, do: 1, else: 0)

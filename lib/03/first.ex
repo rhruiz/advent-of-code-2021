@@ -1,6 +1,6 @@
 defmodule Aoc2021.Day3.First do
   def run(file) do
-    {diagnostics, counts} =
+    {count, columns} =
       file
       |> input()
       |> Stream.map(fn bin ->
@@ -20,9 +20,9 @@ defmodule Aoc2021.Day3.First do
       end)
 
     {gamma, epsilon} =
-      counts
+      columns
       |> Enum.map(fn column ->
-        if column >= diagnostics / 2 do
+        if column >= count / 2 do
           {1, 0}
         else
           {0, 1}
