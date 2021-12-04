@@ -1,43 +1,30 @@
 defmodule Aoc2021.Day4.Bingo do
   @length 5
 
-  def update(board, number_drawn) do
-    if Map.has_key?(board, number_drawn) do
-      Map.update!(board, number_drawn, fn {row, col, _} ->
-        {row, col, true}
-      end)
-    else
-      board
-    end
-  end
+  def score(board, [number_drawn | _] = drawn) do
+    drawn = MapSet.new(drawn)
 
-  def score(board, number_drawn) do
     board
-    |> Enum.reduce(0, fn
-      {number, {_, _, false}}, score -> score + number
-      _, score -> score
+    |> Enum.reduce(0, fn {number, _}, score ->
+      if number in drawn do
+        score
+      else
+        score + number
+      end
     end)
     |> Kernel.*(number_drawn)
   end
 
   def won?(board, drawn) do
-    marked =
-      drawn
-      |> Enum.flat_map(fn number ->
-        if Map.has_key?(board, number) && elem(board[number], 2) do
-          [board[number]]
-        else
-          []
-        end
-      end)
+    marked = Map.take(board, drawn)
 
-    any = fn index_fn ->
+    any = fn selector ->
       marked
-      |> Enum.group_by(index_fn, fn {_, _, drawn} -> drawn end)
-      |> Enum.any?(fn {_, drawn} -> Enum.count(drawn, &(&1)) == @length end)
+      |> Enum.group_by(selector)
+      |> Enum.any?(fn {_, marked} -> length(marked) == @length end)
     end
 
-    any.(fn {row, _, _} -> row end) || any.(fn {_, col, _} -> col end)
+    any.(fn {_, {row, _}} -> row end) || any.(fn {_, {_, col}} -> col end)
   end
 
   def input(file) do
@@ -63,7 +50,7 @@ defmodule Aoc2021.Day4.Bingo do
            line
            |> Enum.with_index()
            |> Enum.into(game, fn {number, column} ->
-             {number, {row, column, false}}
+             {number, {row, column}}
            end)}
         end)
         |> elem(1)

@@ -12,28 +12,29 @@ defmodule Aoc2021.Day4.Second do
   end
 
   def last_winner(boards, [number_drawn | left], drawn) do
-    boards = Enum.map(boards, &(update(&1, number_drawn)))
+    drawn = [number_drawn | drawn]
 
-    case Enum.filter(boards, &won?(&1, [number_drawn | drawn])) do
+    case Enum.filter(boards, &won?(&1, drawn)) do
       [] ->
-        last_winner(boards, left, [number_drawn | drawn])
+        last_winner(boards, left, drawn)
 
       winning_boards ->
         boards = MapSet.new(boards)
         boards_left = MapSet.difference(boards, MapSet.new(winning_boards))
 
-        last_winner(MapSet.to_list(boards_left), left, [number_drawn | drawn])
+        last_winner(MapSet.to_list(boards_left), left, drawn)
     end
   end
 
   def draw(board, [number_drawn | left], drawn) do
-    board = update(board, number_drawn)
+    drawn = [number_drawn | drawn]
 
-    case won?(board, [number_drawn | drawn]) do
+    case won?(board, drawn) do
       true ->
-        {board, number_drawn}
+        {board, drawn}
+
       false ->
-        draw(board, left, [number_drawn | drawn])
+        draw(board, left, drawn)
     end
   end
 end

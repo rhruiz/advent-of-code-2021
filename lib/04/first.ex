@@ -12,13 +12,12 @@ defmodule Aoc2021.Day4.First do
   end
 
   def draw(boards, [number_drawn | left], drawn) do
-    boards = Enum.map(boards, &(update(&1, number_drawn)))
-
     case Enum.filter(boards, &won?(&1, [number_drawn | drawn])) do
       [winner] ->
-        {winner, number_drawn}
+        {winner, [number_drawn | drawn]}
+
       _ ->
-      draw(boards, left, [number_drawn | drawn])
+        draw(boards, left, [number_drawn | drawn])
     end
   end
 end
