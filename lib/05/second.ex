@@ -5,62 +5,34 @@ defmodule Aoc2021.Day5.Second do
       |> input()
       |> Enum.into([])
 
-    {maxx, maxy} = find_max(map)
+    Enum.reduce(map, %{}, fn
+      %{x1: x, x2: x, y1: y1, y2: y2}, map ->
+        # horizontal
+        Enum.reduce(min(y1, y2)..max(y1, y2), map, fn y, map ->
+          Map.update(map, {x, y}, 1, &(&1 + 1))
+        end)
 
-    points =
-      for x <- 0..maxx,
-          y <- 0..maxy do
-        {x, y}
-      end
+      %{y1: y, y2: y, x1: x1, x2: x2}, map ->
+        # vertical
+        Enum.reduce(min(x1, x2)..max(x1, x2), map, fn x, map ->
+          Map.update(map, {x, y}, 1, &(&1 + 1))
+        end)
 
-    points
-    |> Enum.chunk_every(40)
-    |> Task.async_stream(fn points ->
-      Enum.map(points, fn point ->
-        map
-        |> Stream.filter(fn line -> covers?(line, point) end)
-        |> Stream.take(2)
-        |> Enum.count()
-      end)
-      |> Enum.count(&(&1 > 1))
-    end, ordered: false)
-    |> Enum.reduce(0, fn {:ok, count}, sum -> count + sum end)
+      %{x1: x1, x2: x2, y1: y1, y2: y2}, map ->
+        ystep = trunc((y2-y1)/abs(y2-y1))
+
+        Enum.reduce(x1..x2, {y1, map}, fn x, {y, map} ->
+          {y+ystep, Map.update(map, {x, y}, 1, &(&1 + 1))}
+        end)
+        |> then(fn {_ystep, map} -> map end)
+    end)
+    |> Enum.count(fn {_, count} -> count > 1 end)
   end
 
   def input(file) do
     file
     |> File.stream!()
     |> Stream.map(&parse_line/1)
-  end
-
-  def horizontal_or_vertical(stream) do
-    Stream.filter(stream, fn
-      %{x1: x, x2: x} -> true
-      %{y1: y, y2: y} -> true
-      _ -> false
-    end)
-  end
-
-  def covers?(line, {x, y}) do
-    x >= min(line.x1, line.x2) &&
-    x <= max(line.x1, line.x2) &&
-    y >= min(line.y1, line.y2) &&
-    y <= max(line.y1, line.y2) &&
-    (line.y1 - line.y2) * x + (line.x2 - line.x1) * y + line.x1 * line.y2 - line.x2 * line.y1 == 0
-  end
-
-  def find_max(lines) do
-    maxx =
-      lines
-      |> Enum.max_by(fn %{x1: x1, x2: x2} -> max(x1, x2) end)
-      |> then(fn line -> max(line.x1, line.x2) end)
-
-    maxy =
-      lines
-      |> Enum.max_by(fn %{y1: y1, y2: y2} -> max(y1, y2) end)
-      |> then(fn line -> max(line.y1, line.y2) end)
-
-    {maxx, maxy}
   end
 
   def parse_line(line) do
