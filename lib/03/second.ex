@@ -9,6 +9,7 @@ defmodule Aoc2021.Day3.Second do
         bin
         |> String.split("", trim: true)
         |> Enum.map(&String.to_integer/1)
+        |> List.to_tuple()
       end)
 
     oxygen = find_reading(readings, &Kernel.==/2)
@@ -20,7 +21,7 @@ defmodule Aoc2021.Day3.Second do
   def most_common(readings, position) do
     {count, sum} =
       Enum.reduce(readings, {0, 0}, fn line, {count, sum} ->
-        {count + 1, sum + Enum.at(line, position)}
+        {count + 1, sum + elem(line, position)}
       end)
 
     if(sum >= count / 2, do: 1, else: 0)
@@ -35,13 +36,15 @@ defmodule Aoc2021.Day3.Second do
 
     readings
     |> Enum.filter(fn reading ->
-      comparison.(Enum.at(reading, position) &&& 1, most_common)
+      comparison.(elem(reading, position) &&& 1, most_common)
     end)
     |> find_reading(comparison, position + 1)
   end
 
   def from_binary(digits) do
-    Integer.undigits(digits, 2)
+    digits
+    |> Tuple.to_list()
+    |> Integer.undigits(2)
   end
 
   def input(file) do

@@ -1,40 +1,44 @@
 defmodule Aoc2021.Day3.First do
+  use Bitwise, only_operators: true
+
   def run(file) do
-    {count, columns} =
+    {count, readings} =
       file
       |> input()
       |> Stream.map(fn bin ->
         bin
-        |> String.split("", trim: true)
-        |> Enum.map(&String.to_integer/1)
+        |> String.to_charlist()
+        |> List.to_tuple()
       end)
       |> Enum.reduce({0, nil}, fn
-        item, {0, nil} ->
-          {1, item}
+        bin, {0, nil} ->
+          {1, [bin]}
 
-        item, {count, sum} ->
-          {count + 1,
-           sum
-           |> Enum.zip(item)
-           |> Enum.map(fn {a, b} -> a + b end)}
+        bin, {count, list} ->
+          {count + 1, [bin | list]}
       end)
 
-    {gamma, epsilon} =
-      columns
+    half = div(count, 2)
+
+    bitsize =
+      readings
+      |> hd()
+      |> tuple_size()
+
+    gamma =
+      0..(bitsize - 1)
       |> Enum.map(fn column ->
-        if column >= count / 2 do
-          {1, 0}
+        if Enum.count_until(readings, &(elem(&1, column) == ?1), half + 1) > half do
+          1
         else
-          {0, 1}
+          0
         end
       end)
-      |> Enum.unzip()
+      |> Integer.undigits(2)
 
-    {from_binary(gamma), from_binary(epsilon)}
-  end
+    episilon = ~~~gamma &&& 2 ** bitsize - 1
 
-  def from_binary(digits) do
-    Integer.undigits(digits, 2)
+    {gamma, episilon}
   end
 
   def input(file) do
