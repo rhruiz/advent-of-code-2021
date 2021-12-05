@@ -19,10 +19,10 @@ defmodule Aoc2021.Day5.Second do
         end)
 
       %{x1: x1, x2: x2, y1: y1, y2: y2}, map ->
-        ystep = trunc((y2-y1)/abs(y2-y1))
+        ystep = trunc((y2 - y1) / abs(y2 - y1))
 
         Enum.reduce(x1..x2, {y1, map}, fn x, {y, map} ->
-          {y+ystep, Map.update(map, {x, y}, 1, &(&1 + 1))}
+          {y + ystep, Map.update(map, {x, y}, 1, &(&1 + 1))}
         end)
         |> then(fn {_ystep, map} -> map end)
     end)

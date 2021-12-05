@@ -10,14 +10,13 @@ defmodule Aoc2021.Day5.First do
       %{x1: x, x2: x, y1: y1, y2: y2}, map ->
         # horizontal
         Enum.reduce(min(y1, y2)..max(y1, y2), map, fn y, map ->
-          Map.update(map, {x, y}, 1, &(&1+1))
+          Map.update(map, {x, y}, 1, &(&1 + 1))
         end)
-
 
       %{y1: y, y2: y, x1: x1, x2: x2}, map ->
         # vertical
         Enum.reduce(min(x1, x2)..max(x1, x2), map, fn x, map ->
-          Map.update(map, {x, y}, 1, &(&1+1))
+          Map.update(map, {x, y}, 1, &(&1 + 1))
         end)
     end)
     |> Enum.count(fn {_, count} -> count > 1 end)
