@@ -41,10 +41,7 @@ defmodule Aoc2021.Day3.Second do
   end
 
   def from_binary(digits) do
-    digits
-    |> Enum.map(&to_string/1)
-    |> Enum.join("")
-    |> String.to_integer(2)
+    Integer.undigits(digits, 2)
   end
 
   def input(file) do
