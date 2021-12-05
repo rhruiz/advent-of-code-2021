@@ -7,8 +7,6 @@ defmodule Aoc2021.Day5.Second do
 
     {maxx, maxy} = find_max(map)
 
-    {map, {maxx, maxy}}
-
     points =
       for x <- 0..maxx,
           y <- 0..maxy do
@@ -16,10 +14,17 @@ defmodule Aoc2021.Day5.Second do
       end
 
     points
-    |> Enum.map(fn point ->
-      Enum.count(map, fn line -> covers?(line, point) end)
-    end)
-    |> Enum.count(&(&1 > 1))
+    |> Enum.chunk_every(40)
+    |> Task.async_stream(fn points ->
+      Enum.map(points, fn point ->
+        map
+        |> Stream.filter(fn line -> covers?(line, point) end)
+        |> Stream.take(2)
+        |> Enum.count()
+      end)
+      |> Enum.count(&(&1 > 1))
+    end, ordered: false)
+    |> Enum.reduce(0, fn {:ok, count}, sum -> count + sum end)
   end
 
   def input(file) do
