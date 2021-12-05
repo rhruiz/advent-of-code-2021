@@ -2,7 +2,7 @@ defmodule TestCase do
   use ExUnit.CaseTemplate
 
   using do
-    test_module = hd(__CALLER__.context_modules)
+    test_module = __CALLER__.module
 
     code_module =
       test_module
