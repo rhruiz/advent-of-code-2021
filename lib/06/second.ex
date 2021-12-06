@@ -7,7 +7,7 @@ defmodule Aoc2021.Day6.Second do
       |> input()
       |> Enum.frequencies()
 
-    inital
+    initial
     |> Map.merge(input)
     |> simulate(days)
   end
@@ -21,12 +21,10 @@ defmodule Aoc2021.Day6.Second do
   end
 
   def simulate(population, days, day) do
-    new_population =
-      Enum.reduce(1..8, %{}, fn age, new_population ->
-        Map.put(new_population, age - 1, population[age])
-      end)
-
-    new_population
+    1..8
+    |> Enum.reduce(%{}, fn age, new_population ->
+      Map.put(new_population, age - 1, population[age])
+    end)
     |> Map.update!(6, fn count -> count + population[0] end)
     |> Map.put(8, population[0])
     |> simulate(days, day + 1)
