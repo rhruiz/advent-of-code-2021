@@ -11,7 +11,8 @@ defmodule Aoc2021.Day7.First do
   end
 
   def minimal(crabs, candidate) do
-    minimal(crabs, candidate, distance(crabs, candidate), %{})
+    initial_best = distance(crabs, candidate)
+    minimal(crabs, candidate, initial_best, %{candidate => initial_best})
   end
 
   def minimal(crabs, candidate, best, cache) do
