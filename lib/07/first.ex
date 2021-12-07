@@ -24,10 +24,10 @@ defmodule Aoc2021.Day7.First do
     to_right = Map.get(cache, candidate + 1)
 
     cond do
-      to_left < best ->
+      to_left < to_right && to_left < best ->
         minimal(crabs, candidate - 1, to_left, cache)
 
-      to_right < best ->
+      to_right < to_left && to_right < best ->
         minimal(crabs, candidate + 1, to_right, cache)
 
       true ->

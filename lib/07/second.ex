@@ -15,8 +15,13 @@ defmodule Aoc2021.Day7.Second do
   end
 
   def minimal(crabs, candidate, best, cache) do
-    to_left = distance(crabs, candidate - 1)
-    to_right = distance(crabs, candidate + 1)
+    cache =
+      cache
+      |> Map.put_new_lazy(candidate - 1, fn -> distance(crabs, candidate - 1) end)
+      |> Map.put_new_lazy(candidate + 1, fn -> distance(crabs, candidate + 1) end)
+
+    to_left = Map.get(cache, candidate - 1)
+    to_right = Map.get(cache, candidate + 1)
 
     cond do
       to_left < to_right && to_left < best ->
