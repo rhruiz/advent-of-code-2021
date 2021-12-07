@@ -28,7 +28,7 @@ defmodule Aoc2021.Day7.First do
         minimal(crabs, candidate - 1, to_left, cache)
 
       to_right < best ->
-        minimal(crabs, candidate - 1, to_right, cache)
+        minimal(crabs, candidate + 1, to_right, cache)
 
       true ->
         candidate
