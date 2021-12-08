@@ -7,7 +7,7 @@ defmodule Aoc2021.Day8Test do
     end
 
     test "with puzzle data" do
-      assert 26 = First.run(input())
+      assert 456 = First.run(input())
     end
   end
 end
