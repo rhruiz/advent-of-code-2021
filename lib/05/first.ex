@@ -3,21 +3,22 @@ defmodule Aoc2021.Day5.First do
     map =
       file
       |> input()
-      |> horizontal_or_vertical()
-      |> Enum.into([])
 
     Enum.reduce(map, %{}, fn
-      %{x1: x, x2: x, y1: y1, y2: y2}, map ->
+      {x, y1, x, y2}, map ->
         # horizontal
-        Enum.reduce(min(y1, y2)..max(y1, y2), map, fn y, map ->
+        Enum.reduce(y1..y2, map, fn y, map ->
           Map.update(map, {x, y}, 1, &(&1 + 1))
         end)
 
-      %{y1: y, y2: y, x1: x1, x2: x2}, map ->
+      {x1, y, x2, y}, map ->
         # vertical
-        Enum.reduce(min(x1, x2)..max(x1, x2), map, fn x, map ->
+        Enum.reduce(x1..x2, map, fn x, map ->
           Map.update(map, {x, y}, 1, &(&1 + 1))
         end)
+
+      _, map ->
+        map
     end)
     |> Enum.count(fn {_, count} -> count > 1 end)
   end
@@ -28,19 +29,12 @@ defmodule Aoc2021.Day5.First do
     |> Stream.map(&parse_line/1)
   end
 
-  def horizontal_or_vertical(stream) do
-    Stream.filter(stream, fn
-      %{x1: x, x2: x} -> true
-      %{y1: y, y2: y} -> true
-      _ -> false
-    end)
-  end
-
   def parse_line(line) do
-    line_re = ~r[(?<x1>\d+),(?<y1>\d+) \-\> (?<x2>\d+),(?<y2>\d+)]
-
-    line_re
-    |> Regex.named_captures(line)
-    |> Enum.into(%{}, fn {k, v} -> {String.to_atom(k), String.to_integer(v)} end)
+    line
+    |> String.split([",", " -> ", "\n"], trim: true)
+    |> Enum.map(&String.to_integer/1)
+    |> then(fn [x1, y1, x2, y2] ->
+      {x1, y1, x2, y2}
+    end)
   end
 end
