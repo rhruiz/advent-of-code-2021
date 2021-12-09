@@ -1,5 +1,5 @@
 defmodule Aoc2021.Day8.Second do
-  @unique_lenght %{
+  @unique_length %{
     2 => 1,
     4 => 4,
     3 => 7,
@@ -51,7 +51,7 @@ defmodule Aoc2021.Day8.Second do
     known = %{}
 
     unique_numbers =
-      Enum.into(@unique_lenght, %{}, fn {length, number} ->
+      Enum.into(@unique_length, %{}, fn {length, number} ->
         {number, Enum.find(readings, &(length(&1) == length))}
       end)
 
@@ -63,7 +63,7 @@ defmodule Aoc2021.Day8.Second do
       |> Enum.find(fn number -> length(number -- unique_numbers[7]) == 4 end)
 
     known = Map.put(known, 2, hd(unique_numbers[8] -- number_6))
-    known = Map.put(known, 5, hd((unique_numbers[7] -- [known[0]]) -- [known[2]]))
+    known = Map.put(known, 5, hd(unique_numbers[1] -- [known[2]]))
 
     number_3 =
       readings
@@ -83,7 +83,7 @@ defmodule Aoc2021.Day8.Second do
     known = Map.put(known, 4, hd(number_2 -- number_3))
     known = Map.put(known, 1, hd(number_5 -- number_3))
     known = Map.put(known, 6, hd((number_5 -- unique_numbers[4]) -- [known[0]]))
-    Map.put(known, 3, hd((unique_numbers[4] -- unique_numbers[7]) -- [known[1]]))
+    Map.put(known, 3, hd((unique_numbers[4] -- unique_numbers[1]) -- [known[1]]))
   end
 
   def input(file) do
