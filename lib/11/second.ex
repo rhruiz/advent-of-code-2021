@@ -17,7 +17,6 @@ defmodule Aoc2021.Day11.Second do
 
       if(Octopus.flashes(map) == 100, do: {[step], map}, else: {[], map})
     end)
-    |> Enum.take(1)
-    |> hd()
+    |> Enum.find(&Function.identity/1)
   end
 end
