@@ -1,29 +1,15 @@
 defmodule Aoc2021.Day12.Second do
   def run(file) do
-    nodes =
-      file
-      |> input()
-      |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
-
-    specials =
-      nodes
-      |> Map.keys()
-      |> Enum.filter(fn {_id, type} -> type == :small end)
-
-    nodes =
-      Enum.into(nodes, %{}, fn {{id, _type}, conns} -> {id, conns} end)
-      |> IO.inspect()
-
-    specials
-    |> Enum.flat_map(fn {special, _} ->
-      pathfinder(nodes, [:start], MapSet.new(), special, 0)
-    end)
-    |> Enum.uniq()
+    file
+    |> input()
+    |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
+    |> Enum.into(%{}, fn {{id, _type}, conns} -> {id, conns} end)
+    |> pathfinder()
     |> length()
   end
 
-  def pathfinder(_, [:end | _] = path, _, _, _) do
-    [path]
+  def pathfinder(nodes) do
+    pathfinder(nodes, [:start], %{}, nil, 0)
   end
 
   def pathfinder(nodes, [current | _] = path, visited, special, sp_visited) do
@@ -33,14 +19,22 @@ defmodule Aoc2021.Day12.Second do
       |> Enum.filter(fn
         {_, :big} -> true
         {^special, _} when special != nil -> sp_visited < 2
-        {id, _} -> id not in visited
+        {id, _} when special == nil and is_map_key(visited, id) -> true
+        {id, _} -> !Map.has_key?(visited, id)
       end)
 
-    visited = MapSet.put(visited, current)
+    visited = Map.put(visited, current, [])
     sp_visited = if(current == special, do: sp_visited + 1, else: sp_visited)
 
-    Enum.flat_map(conns, fn {id, _type} ->
-      pathfinder(nodes, [id | path], visited, special, sp_visited)
+    Enum.flat_map(conns, fn
+      {:end, _} ->
+        [[:end | path]]
+
+      {node_id, :small} when special == nil and is_map_key(visited, node_id) ->
+        pathfinder(nodes, [node_id | path], visited, node_id, sp_visited + 1)
+
+      {node_id, _} ->
+        pathfinder(nodes, [node_id | path], visited, special, sp_visited)
     end)
   end
 
