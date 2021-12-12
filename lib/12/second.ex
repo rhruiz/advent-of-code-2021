@@ -2,8 +2,7 @@ defmodule Aoc2021.Day12.Second do
   def run(file) do
     file
     |> input()
-    |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
-    |> Enum.into(%{}, fn {{id, _type}, conns} -> {id, conns} end)
+    |> Enum.group_by(fn {{id, _type}, _} -> id end, &elem(&1, 1))
     |> pathfinder()
     |> length()
   end
@@ -46,14 +45,10 @@ defmodule Aoc2021.Day12.Second do
       [source, destination] = String.split(line, "-")
 
       type = fn node ->
-        if String.downcase(node) == node do
-          if node in ~w[start end] do
-            :unique
-          else
-            :small
-          end
-        else
-          :big
+        cond do
+          node in ~w[start end] -> :unique
+          String.downcase(node) == node -> :small
+          true -> :big
         end
       end
 
@@ -63,12 +58,11 @@ defmodule Aoc2021.Day12.Second do
       }
     end)
     |> Stream.flat_map(fn
+      {{:end, _} = a, b} -> [{b, a}]
+      {a, {:end, _} = b} -> [{a, b}]
+      {{:start, _} = a, b} -> [{a, b}]
+      {a, {:start, _} = b} -> [{b, a}]
       {a, b} -> [{a, b}, {b, a}]
-    end)
-    |> Stream.reject(fn
-      {{:end, _}, _} -> true
-      {_, {:start, _}} -> true
-      _ -> false
     end)
   end
 end
