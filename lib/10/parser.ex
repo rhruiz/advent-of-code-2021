@@ -1,31 +1,38 @@
 defmodule Aoc2021.Day10.Parser do
-  @opening '<[{('
-  @closing '>]})'
-  @closing_for @opening |> Enum.zip(@closing) |> Enum.into(%{})
+  @closing_for %{
+    ?( => ?),
+    ?< => ?>,
+    ?[ => ?],
+    ?{ => ?}
+  }
 
   def parse(line) do
-    parse([], line)
+    parse(line, [])
   end
 
-  def parse(stack, []) when hd(stack) != nil do
+  def parse([], [_head | _] = stack) do
     {:error, :incomplete, stack}
   end
 
-  def parse(stack, [chr | tail]) when chr in @opening do
-    parse([chr | stack], tail)
+  def parse([chr | tail], [chr | stack]) do
+    parse(tail, stack)
   end
 
-  def parse([opening | stack], [chr | tail]) when chr in @closing do
-    case @closing_for[opening] do
-      ^chr -> parse(stack, tail)
-      _other -> {:error, :corrupted, chr}
-    end
+  def parse([chr | tail], stack) when is_map_key(@closing_for, chr) do
+    parse(tail, [@closing_for[chr] | stack])
+  end
+
+  def parse([chr | _tail], _) do
+    {:error, :corrupted, chr}
   end
 
   def input(file) do
     file
     |> File.stream!()
-    |> Stream.map(&String.trim_trailing/1)
-    |> Stream.map(&String.to_charlist/1)
+    |> Stream.map(fn line ->
+      line
+      |> String.trim_trailing()
+      |> String.to_charlist()
+    end)
   end
 end
