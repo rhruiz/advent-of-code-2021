@@ -5,35 +5,42 @@ defmodule Aoc2021.Day12.Second do
       |> input()
       |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
 
-    nodes
-    |> Map.keys()
-    |> Enum.filter(fn node ->
-      node.type == "small" && node.id not in ~w[start end]
-    end)
-    |> Enum.flat_map(fn special ->
-      pathfinder(nodes, [%{id: "start", type: "small"}], MapSet.new(), special.id, 0)
+    specials =
+      nodes
+      |> Map.keys()
+      |> Enum.filter(fn {_id, type} -> type == :small end)
+
+    nodes =
+      Enum.into(nodes, %{}, fn {{id, _type}, conns} -> {id, conns} end)
+      |> IO.inspect()
+
+    specials
+    |> Enum.flat_map(fn {special, _} ->
+      pathfinder(nodes, [:start], MapSet.new(), special, 0)
     end)
     |> Enum.uniq()
     |> length()
   end
 
-  def pathfinder(_, [%{id: "end"} | _] = path, _, _, _) do
+  def pathfinder(_, [:end | _] = path, _, _, _) do
     [path]
   end
 
-  def pathfinder(nodes, [%{id: id} = current | _] = path, visited, special, sp_visited) do
+  def pathfinder(nodes, [current | _] = path, visited, special, sp_visited) do
     conns =
       nodes
       |> Map.get(current, [])
-      |> Enum.filter(fn %{type: type, id: id} = node ->
-        type == "big" || node not in visited || (id == special && sp_visited < 2)
+      |> Enum.filter(fn
+        {_, :big} -> true
+        {^special, _} when special != nil -> sp_visited < 2
+        {id, _} -> id not in visited
       end)
 
     visited = MapSet.put(visited, current)
-    sp_visited = if(id == special, do: sp_visited + 1, else: sp_visited)
+    sp_visited = if(current == special, do: sp_visited + 1, else: sp_visited)
 
-    Enum.flat_map(conns, fn node ->
-      pathfinder(nodes, [node | path], visited, special, sp_visited)
+    Enum.flat_map(conns, fn {id, _type} ->
+      pathfinder(nodes, [id | path], visited, special, sp_visited)
     end)
   end
 
@@ -46,17 +53,28 @@ defmodule Aoc2021.Day12.Second do
 
       type = fn node ->
         if String.downcase(node) == node do
-          "small"
+          if node in ~w[start end] do
+            :unique
+          else
+            :small
+          end
         else
-          "big"
+          :big
         end
       end
 
       {
-        %{id: source, type: type.(source)},
-        %{id: destination, type: type.(destination)}
+        {String.to_atom(source), type.(source)},
+        {String.to_atom(destination), type.(destination)}
       }
     end)
-    |> Stream.flat_map(fn {a, b} -> [{a, b}, {b, a}] end)
+    |> Stream.flat_map(fn
+      {a, b} -> [{a, b}, {b, a}]
+    end)
+    |> Stream.reject(fn
+      {{:end, _}, _} -> true
+      {_, {:start, _}} -> true
+      _ -> false
+    end)
   end
 end
