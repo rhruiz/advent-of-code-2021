@@ -1,0 +1,29 @@
+name: Run tests
+
+on:
+  push:
+
+jobs:
+  test:
+    env:
+      MIX_ENV: test
+
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: '24.1.7'
+          elixir-version: '1.13.0'
+
+      - uses: actions/cache@v2
+        id: mix-cache
+        with:
+          path: deps
+          key: ${{ runner.os }}-mix-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
+          restore-keys: |
+            ${{ runner.os }}-mix-
+
+      - run: mix deps.get
+      - run: mix format --check-formatted
