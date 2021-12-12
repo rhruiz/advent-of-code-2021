@@ -12,5 +12,16 @@ defmodule Aoc2021.Day12Test do
       assert 5874 = First.run(input())
     end
   end
-end
 
+  describe "second star" do
+    test "with test data" do
+      assert 36 = Second.run("test/support/12/simple_test_input.txt")
+      assert 103 = Second.run(test_input())
+      assert 3509 = Second.run("test/support/12/other_test_input.txt")
+    end
+
+    test "with puzzle data" do
+      assert 153_592 = Second.run(input())
+    end
+  end
+end
