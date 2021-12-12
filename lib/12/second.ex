@@ -17,7 +17,7 @@ defmodule Aoc2021.Day12.Second do
       |> Map.get(current, [])
       |> Enum.filter(fn
         {_, :big} -> true
-        {^special, _} when special != nil -> sp_visited < 2
+        {^special, _} -> sp_visited < 2
         {id, _} when special == nil and is_map_key(visited, id) -> true
         {id, _} -> !Map.has_key?(visited, id)
       end)
