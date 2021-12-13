@@ -6,8 +6,10 @@ defmodule Aoc2021.Day13.Second do
     |> Enum.reduce({grid, xmax, ymax}, fn fold, {grid, xmax, ymax} ->
       fold(grid, xmax, ymax, fold)
     end)
-    |> then(fn args -> apply(__MODULE__, :render, Tuple.to_list(args)) end)
+    |> render()
   end
+
+  def render({grid, xmax, ymax}), do: render(grid, xmax, ymax)
 
   def render(grid, xmax, ymax) do
     Enum.each(0..ymax, fn y ->
