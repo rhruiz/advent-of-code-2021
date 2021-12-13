@@ -10,7 +10,7 @@ defmodule Aoc2021.Day13.First do
 
   def fold(grid, xmax, ymax, {:x, xfold}) do
     grid =
-      Enum.reduce((xfold+1)..xmax, grid, fn x, grid ->
+      Enum.reduce((xfold + 1)..xmax, grid, fn x, grid ->
         Enum.reduce(0..ymax, grid, fn y, grid ->
           case Map.fetch(grid, {x, y}) do
             :error ->
@@ -29,7 +29,7 @@ defmodule Aoc2021.Day13.First do
 
   def fold(grid, xmax, ymax, {:y, yfold}) do
     grid =
-      Enum.reduce((yfold+1)..ymax, grid, fn y, grid ->
+      Enum.reduce((yfold + 1)..ymax, grid, fn y, grid ->
         Enum.reduce(0..xmax, grid, fn x, grid ->
           case Map.fetch(grid, {x, y}) do
             :error ->
@@ -52,7 +52,7 @@ defmodule Aoc2021.Day13.First do
       |> File.read!()
       |> String.split("\n\n")
 
-    {grid, xmax, ymax}  =
+    {grid, xmax, ymax} =
       dots
       |> String.split("\n")
       |> Enum.map(fn line ->

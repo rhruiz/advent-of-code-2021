@@ -21,12 +21,12 @@ defmodule Aoc2021.Day13.Second do
   end
 
   def fold(grid, xmax, ymax, {:x, xfold}) do
-    grid = do_fold(grid, (xfold+1)..xmax, 0..ymax, fn x -> xfold - (x - xfold) end, &(&1))
+    grid = do_fold(grid, (xfold + 1)..xmax, 0..ymax, fn x -> xfold - (x - xfold) end, & &1)
     {grid, xfold - 1, ymax}
   end
 
   def fold(grid, xmax, ymax, {:y, yfold}) do
-    grid = do_fold(grid, 0..xmax, (yfold+1)..ymax, &(&1), fn y -> yfold - (y - yfold) end)
+    grid = do_fold(grid, 0..xmax, (yfold + 1)..ymax, & &1, fn y -> yfold - (y - yfold) end)
     {grid, xmax, yfold - 1}
   end
 
@@ -52,7 +52,7 @@ defmodule Aoc2021.Day13.Second do
       |> File.read!()
       |> String.split("\n\n")
 
-    {grid, xmax, ymax}  =
+    {grid, xmax, ymax} =
       dots
       |> String.split("\n")
       |> Enum.map(fn line ->
@@ -77,4 +77,3 @@ defmodule Aoc2021.Day13.Second do
     {grid, xmax, ymax, instructions}
   end
 end
-
