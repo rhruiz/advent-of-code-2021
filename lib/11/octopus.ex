@@ -6,15 +6,15 @@ defmodule Aoc2021.Day11.Octopus do
   end
 
   def step(map) do
-    map = Enum.into(map, %{}, fn {position, energy} -> {position, energy + 1} end)
+    map = Map.map(map, fn {_, energy} -> energy + 1 end)
 
     map
     |> Enum.reduce(map, fn
       {position, 10}, map -> flash(map, position)
       _, map -> map
     end)
-    |> Enum.into(%{}, fn {position, energy} ->
-      {position, if(energy > 9, do: 0, else: energy)}
+    |> Map.map(fn {_, energy} ->
+      if(energy > 9, do: 0, else: energy)
     end)
   end
 
