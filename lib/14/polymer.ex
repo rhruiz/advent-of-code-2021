@@ -13,25 +13,25 @@ defmodule Aoc2021.Day14.Polymer do
     end)
     |> Enum.reduce(%{}, fn {[a, b], count}, frequencies ->
       frequencies
-      |> Map.update([a], count, &(&1 + count))
-      |> Map.update([b], count, &(&1 + count))
+      |> Map.update(a, count, &(&1 + count))
+      |> Map.update(b, count, &(&1 + count))
     end)
     |> Enum.reduce({nil, 0}, fn {_, count}, {min, max} ->
       {min(min, round(count/2)), max(max, round(count/2))}
     end)
-    |> then(fn {a, b} -> b - a end)
+    |> then(fn {min, max} -> max - min end)
   end
 
   def step(pair_count, insertions) do
-    Enum.reduce(pair_count, %{}, fn {[a, b] = pair, existing}, new_pair_count ->
+    Enum.reduce(pair_count, %{}, fn {[a, b] = pair, existing}, pair_count ->
       case Map.fetch(insertions, pair) do
-        :error ->
-          Map.put(new_pair_count, pair, existing)
-
         {:ok, c} ->
-          new_pair_count
+          pair_count
           |> Map.update([a, c], existing, &(&1 + existing))
           |> Map.update([c, b], existing, &(&1 + existing))
+
+        :error ->
+          Map.put(pair_count, pair, existing)
       end
     end)
   end

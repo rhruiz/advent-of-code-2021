@@ -17,7 +17,7 @@ defmodule Aoc2021.Day14Test do
     end
 
     test "with puzzle data" do
-      assert 2188189693529 = Second.run(input())
+      assert 1976896901756 = Second.run(input())
     end
   end
 end
