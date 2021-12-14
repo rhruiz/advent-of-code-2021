@@ -17,7 +17,7 @@ defmodule Aoc2021.Day14.Polymer do
       |> Map.update(b, count, &(&1 + count))
     end)
     |> Enum.reduce({nil, 0}, fn {_, count}, {min, max} ->
-      {min(min, round(count/2)), max(max, round(count/2))}
+      {min(min, round(count / 2)), max(max, round(count / 2))}
     end)
     |> then(fn {min, max} -> max - min end)
   end

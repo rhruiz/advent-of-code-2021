@@ -13,11 +13,11 @@ defmodule Aoc2021.Day14Test do
 
   describe "second star" do
     test "with test data" do
-      assert 2188189693529 = Second.run(test_input())
+      assert 2_188_189_693_529 = Second.run(test_input())
     end
 
     test "with puzzle data" do
-      assert 1976896901756 = Second.run(input())
+      assert 1_976_896_901_756 = Second.run(input())
     end
   end
 end
