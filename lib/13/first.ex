@@ -10,18 +10,14 @@ defmodule Aoc2021.Day13.First do
 
   def fold(grid, xmax, ymax, {:x, xfold}) do
     grid =
-      Enum.reduce((xfold + 1)..xmax, grid, fn x, grid ->
-        Enum.reduce(0..ymax, grid, fn y, grid ->
-          case Map.fetch(grid, {x, y}) do
-            :error ->
-              grid
+      Enum.reduce(grid, grid, fn
+        {{x, y}, ?#}, grid when x > xfold ->
+          grid
+          |> Map.delete({x, y})
+          |> Map.put({xfold - (x - xfold), y}, ?#)
 
-            {:ok, ?#} ->
-              grid
-              |> Map.delete({x, y})
-              |> Map.put({xfold - (x - xfold), y}, ?#)
-          end
-        end)
+        _, grid ->
+          grid
       end)
 
     {grid, xfold - 1, ymax}
@@ -29,18 +25,14 @@ defmodule Aoc2021.Day13.First do
 
   def fold(grid, xmax, ymax, {:y, yfold}) do
     grid =
-      Enum.reduce((yfold + 1)..ymax, grid, fn y, grid ->
-        Enum.reduce(0..xmax, grid, fn x, grid ->
-          case Map.fetch(grid, {x, y}) do
-            :error ->
-              grid
+      Enum.reduce(grid, grid, fn
+        {{x, y}, ?#}, grid when y > yfold ->
+          grid
+          |> Map.delete({x, y})
+          |> Map.put({x, yfold - (y - yfold)}, ?#)
 
-            {:ok, ?#} ->
-              grid
-              |> Map.delete({x, y})
-              |> Map.put({x, yfold - (y - yfold)}, ?#)
-          end
-        end)
+        _, grid ->
+          grid
       end)
 
     {grid, xmax, yfold - 1}

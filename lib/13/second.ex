@@ -20,29 +20,25 @@ defmodule Aoc2021.Day13.Second do
     end)
   end
 
-  def fold(grid, xmax, ymax, {:x, xfold}) do
-    grid = do_fold(grid, (xfold + 1)..xmax, 0..ymax, fn x -> xfold - (x - xfold) end, & &1)
+  def fold(grid, _xmax, ymax, {:x, xfold}) do
+    grid = do_fold(grid, xfold, 0, fn {x, y} -> {xfold - (x - xfold), y} end)
     {grid, xfold - 1, ymax}
   end
 
-  def fold(grid, xmax, ymax, {:y, yfold}) do
-    grid = do_fold(grid, 0..xmax, (yfold + 1)..ymax, & &1, fn y -> yfold - (y - yfold) end)
+  def fold(grid, xmax, _ymax, {:y, yfold}) do
+    grid = do_fold(grid, 0, yfold, fn {x, y} -> {x, yfold - (y - yfold)} end)
     {grid, xmax, yfold - 1}
   end
 
-  defp do_fold(grid, xrange, yrange, updatex, updatey) do
-    Enum.reduce(xrange, grid, fn x, grid ->
-      Enum.reduce(yrange, grid, fn y, grid ->
-        case Map.fetch(grid, {x, y}) do
-          :error ->
-            grid
+  defp do_fold(grid, xfold, yfold, transform) do
+    Enum.reduce(grid, grid, fn
+      {{x, y}, value}, grid when x >= xfold and y >= yfold ->
+        grid
+        |> Map.delete({x, y})
+        |> Map.put(transform.({x, y}), value)
 
-          {:ok, ?#} ->
-            grid
-            |> Map.delete({x, y})
-            |> Map.put({updatex.(x), updatey.(y)}, ?#)
-        end
-      end)
+      _, grid ->
+        grid
     end)
   end
 
