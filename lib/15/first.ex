@@ -1,42 +1,52 @@
 defmodule Aoc2021.Day15.First do
-  @deltas for x <- -1..1, y <- -1..1, x != y, {x, y} != {0, 0}, do: {x, y}
+  @deltas [{-1, 0}, {0, -1}, {1, 0}, {0, 1}]
 
   def run(file) do
     {map, target} = input(file)
 
-    risks =
-      map
-      |> Map.map(fn _ -> nil end)
-      |> Map.put({0, 0}, 0)
+    risks = %{{0, 0} => 0}
 
-    navigate(map, :queue.from_list({0, 0}, risks, MapSet.new(), target)
+    unvisited = map |> Map.keys() |> MapSet.new()
+
+    navigate(map, {0, 0}, risks, unvisited, target)
   end
 
-  def navigate(_map, @empty, _, _), do: :none
+  def navigate(map, current, risks, unvisited, target) do
+    current_risk = risks[current]
 
-  def navigate(map, current, risks, visited, target) do
+    risks =
+      map
+      |> neighbors(current)
+      |> Enum.filter(fn {neighbor, _risk} -> neighbor in unvisited end)
+      |> Enum.reduce(risks, fn {neighbor, risk}, risks ->
+        Map.update(risks, neighbor, current_risk + risk, fn neighbor_risk ->
+          if risk + current_risk < neighbor_risk do
+            risk + current_risk
+          else
+            neighbor_risk
+          end
+        end)
+      end)
+
+    unvisited = MapSet.delete(unvisited, current)
 
     cond do
-      current == target ->
-        {Enum.reverse(route), total_risk}
-
-      MapSet.member?(visited, current) ->
-        navigate(map, current, risks, visited, target)
+      target not in unvisited ->
+        risks[target]
 
       true ->
-        current_risk = risks[current]
-
-        risks =
-          map
-          |> neighbors(pos)
-          |> Enum.reduce(risks, fn {neighbor, risk}, risks ->
-            Map.update!(risks, neighbor, fn risk ->
-              min(risk + current_risk, risks[neighbor])
+        candidate =
+          risks
+          |> Enum.min_by(fn {pos, risk} ->
+            if pos in unvisited do
+              risk
+            else
+              nil
             end
           end)
+          |> elem(0)
 
-        visited = MapSet.put(visited, pos)
-        navigate(map, queue, risks, visited, target)
+        navigate(map, candidate, risks, unvisited, target)
     end
   end
 
