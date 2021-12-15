@@ -11,13 +11,20 @@ defmodule Aoc2021.Day15Test do
     end
   end
 
-#   describe "second star" do
-#     test "with test data" do
-#       assert 2_188_189_693_529 = Second.run(test_input())
-#     end
+   describe "second star" do
+     test "expand with test data" do
+       {map, {xmax, ymax}} = Second.input(test_input())
+       {map, {xmax, ymax}} = Second.expand(map, {xmax, ymax})
 
-#     test "with puzzle data" do
-#       assert 1_976_896_901_756 = Second.run(input())
-#     end
-#   end
+       assert {map, {xmax, ymax}} == Second.input("test/support/15/big_test_input.txt")
+     end
+
+     test "with test data" do
+       assert 315 = Second.run(test_input())
+     end
+
+     test "with puzzle data" do
+       assert 315 = Second.run(input())
+     end
+   end
 end

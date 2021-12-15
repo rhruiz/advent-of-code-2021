@@ -1,5 +1,5 @@
 defmodule Aoc2021.Day15.First do
-  @deltas [{-1, 0}, {0, -1}, {1, 0}, {0, 1}]
+  @deltas [{1, 0}, {0, 1}, {-1, 0}, {0, -1}]
 
   def run(file) do
     {map, target} = input(file)
