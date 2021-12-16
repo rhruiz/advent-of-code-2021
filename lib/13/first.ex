@@ -8,7 +8,7 @@ defmodule Aoc2021.Day13.First do
     |> map_size()
   end
 
-  def fold(grid, xmax, ymax, {:x, xfold}) do
+  def fold(grid, _xmax, ymax, {:x, xfold}) do
     grid =
       Enum.reduce(grid, grid, fn
         {{x, y}, ?#}, grid when x > xfold ->
@@ -23,7 +23,7 @@ defmodule Aoc2021.Day13.First do
     {grid, xfold - 1, ymax}
   end
 
-  def fold(grid, xmax, ymax, {:y, yfold}) do
+  def fold(grid, xmax, _ymax, {:y, yfold}) do
     grid =
       Enum.reduce(grid, grid, fn
         {{x, y}, ?#}, grid when y > yfold ->
