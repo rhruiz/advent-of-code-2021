@@ -6,8 +6,7 @@ defmodule Aoc2021.Day16.Second do
     file
     |> File.read!()
     |> Parser.parse()
-    |> hd()
-    |> Executor.execute()
+    |> then(fn [code] -> Executor.execute(code) end)
   end
 
   def version_sum({version, 4, _}) do

@@ -11,16 +11,8 @@ defmodule Aoc2021.Day16.Parser do
     |> parse([])
   end
 
-  def parse(bits) when is_bitstring(bits) do
-    parse(bits, [])
-  end
-
   def parse(bits) do
     parse(bits, [])
-  end
-
-  def parse(<<>>, packets) do
-    Enum.reverse(packets)
   end
 
   def parse(bits, packets) do
@@ -29,7 +21,7 @@ defmodule Aoc2021.Day16.Parser do
     parse(tail, [packet | packets])
   end
 
-  def parse_one(<<version::size(3), id::size(3), tail::bits>>) do
+  def parse_one(<<version::3*1, id::3*1, tail::bits>>) do
     {packet, tail} = parse_packet(id, tail)
 
     {{version, id, packet}, tail}
