@@ -5,17 +5,33 @@ defmodule Aoc2021.Day15.Second do
     {map, target} = input(file)
     {map, target} = expand(map, target)
 
-    Enum.reduce(map, Graph.new(), fn {pos, _weight}, graph ->
-      map
-      |> neighbors(pos)
-      |> Enum.reduce(graph, fn {neighbor, weight}, graph ->
-        Graph.add_edge(graph, pos, neighbor, weight: weight)
-      end)
-    end)
-    |> Graph.a_star({0, 0}, target, fn {x, y} -> x + y end)
-    |> Enum.reduce(-map[{0, 0}], fn pos, sum ->
-      map[pos] + sum
-    end)
+    navigate(map, target)
+  end
+
+  def navigate(map, target) do
+    navigate(map, target, :gb_sets.singleton({0, {0, 0}}), MapSet.new())
+  end
+
+  def navigate(map, target, queue, visited) do
+    {{risk, current}, queue} = :gb_sets.take_smallest(queue)
+
+    cond do
+      current == target ->
+        risk
+
+      true ->
+        visited = MapSet.put(visited, current)
+
+        queue =
+          for {neighbor, neighbor_risk} <- neighbors(map, current),
+              neighbor not in visited,
+              priority = neighbor_risk + risk,
+              reduce: queue do
+            queue -> :gb_sets.add_element({priority, neighbor}, queue)
+          end
+
+        navigate(map, target, queue, visited)
+    end
   end
 
   def expand(map, {xmax, ymax}) do
