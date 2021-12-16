@@ -1,6 +1,7 @@
 defmodule Aoc2021.Day16Test do
   use TestCase, async: true
   alias Aoc2021.Day16.Parser
+  alias Aoc2021.Day16.Executor
 
   describe "parser" do
     test "sample packets" do
@@ -21,6 +22,23 @@ defmodule Aoc2021.Day16Test do
 
     test "with puzzle data" do
       assert 960 = First.run(input())
+    end
+  end
+
+  describe "second star" do
+    test "packet calculations" do
+      assert 3 = Parser.parse("C200B40A82") |> hd() |> Executor.execute()
+      assert 54 = Parser.parse("04005AC33890") |> hd() |> Executor.execute()
+      assert 7 = Parser.parse("880086C3E88112") |> hd() |> Executor.execute()
+      assert 9 = Parser.parse("CE00C43D881120") |> hd() |> Executor.execute()
+      assert 1 = Parser.parse("D8005AC2A8F0") |> hd() |> Executor.execute()
+      assert 0 = Parser.parse("F600BC2D8F") |> hd() |> Executor.execute()
+      assert 0 = Parser.parse("9C005AC2F8F0") |> hd() |> Executor.execute()
+      assert 1 = Parser.parse("9C0141080250320F1802104A08") |> hd() |> Executor.execute()
+    end
+
+    test "with puzzle data" do
+      assert 12301926782560 = Second.run("./test/support/16/input.txt")
     end
   end
 end
