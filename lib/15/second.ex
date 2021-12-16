@@ -23,12 +23,16 @@ defmodule Aoc2021.Day15.Second do
         visited = MapSet.put(visited, current)
 
         queue =
-          for {neighbor, neighbor_risk} <- neighbors(map, current),
-              neighbor not in visited,
-              priority = neighbor_risk + risk,
-              reduce: queue do
-            queue -> :gb_sets.add_element({priority, neighbor}, queue)
-          end
+          map
+          |> neighbors(current)
+          |> Enum.reduce(queue, fn {neighbor, neighbor_risk}, queue ->
+            if neighbor not in visited do
+              priority = neighbor_risk + risk
+              :gb_sets.add_element({priority, neighbor}, queue)
+            else
+              queue
+            end
+          end)
 
         navigate(map, target, queue, visited)
     end
