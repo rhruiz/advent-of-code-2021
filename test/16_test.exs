@@ -38,7 +38,7 @@ defmodule Aoc2021.Day16Test do
     end
 
     test "with puzzle data" do
-      assert 12301926782560 = Second.run("./test/support/16/input.txt")
+      assert 12_301_926_782_560 = Second.run("./test/support/16/input.txt")
     end
   end
 end

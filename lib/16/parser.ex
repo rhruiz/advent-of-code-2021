@@ -44,11 +44,11 @@ defmodule Aoc2021.Day16.Parser do
   end
 
   def parse_literal(<<1::1, number_part::1*4, tail::bits>>, number) do
-    parse_literal(tail, (number <<< 4) ||| number_part)
+    parse_literal(tail, number <<< 4 ||| number_part)
   end
 
   def parse_literal(<<0::1, number_part::1*4, tail::bits>>, number) do
-    {(number <<< 4) ||| number_part, tail}
+    {number <<< 4 ||| number_part, tail}
   end
 
   def parse_operator(<<0::1, subpacket_length::15*1, tail::bits>>) do
