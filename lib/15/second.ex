@@ -5,10 +5,17 @@ defmodule Aoc2021.Day15.Second do
     {map, target} = input(file)
     {map, target} = expand(map, target)
 
-    risks = %{{0, 0} => 0}
-    unvisited = map |> Map.keys() |> MapSet.new()
-
-    Aoc2021.Day15.First.navigate(map, {0, 0}, risks, unvisited, target)
+    Enum.reduce(map, Graph.new(), fn {pos, _weight}, graph ->
+      map
+      |> neighbors(pos)
+      |> Enum.reduce(graph, fn {neighbor, weight}, graph ->
+        Graph.add_edge(graph, pos, neighbor, weight: weight)
+      end)
+    end)
+    |> Graph.a_star({0, 0}, target, fn {x, y} -> x + y end)
+    |> Enum.reduce(-map[{0, 0}], fn pos, sum ->
+      map[pos] + sum
+    end)
   end
 
   def expand(map, {xmax, ymax}) do
@@ -28,35 +35,6 @@ defmodule Aoc2021.Day15.Second do
       end)
 
     {map, {xmax, ymax}}
-  end
-
-  def navigate(map, queue, visited, risks, target) do
-    {{:value, current}, queue} = :queue.out(queue)
-
-    cond do
-      current in visited ->
-        navigate(map, queue, visited, risks, target)
-
-      current == target ->
-        risks[target]
-
-      true ->
-        {queue, risks} =
-          map
-          |> neighbors(current)
-          |> Enum.filter(fn {pos, _} -> pos not in visited end)
-          |> Enum.reduce({queue, risks}, fn {pos, risk}, {queue, risks} ->
-            if risks[current] + risk < risks[pos] do
-              {:queue.in(pos, queue), Map.put(risks, pos, risks[current] + risk)}
-            else
-              {queue, risks}
-            end
-          end)
-
-        visited = MapSet.put(visited, current)
-
-        navigate(map, queue, visited, risks, target)
-    end
   end
 
   def neighbors(map, {x, y}) do

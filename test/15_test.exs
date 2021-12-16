@@ -24,7 +24,7 @@ defmodule Aoc2021.Day15Test do
      end
 
      test "with puzzle data" do
-       assert 315 = Second.run(input())
+       assert 1567 < Second.run(input())
      end
    end
 end
