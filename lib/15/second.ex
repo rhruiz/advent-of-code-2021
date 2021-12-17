@@ -9,33 +9,41 @@ defmodule Aoc2021.Day15.Second do
   end
 
   def navigate(map, target) do
-    navigate(map, target, :gb_sets.singleton({0, {0, 0}}), MapSet.new())
+    risks = %{{0, 0} => 0}
+    navigate(map, target, [{0, {0, 0}}], risks)
   end
 
-  def navigate(map, target, queue, visited) do
-    {{risk, current}, queue} = :gb_sets.take_smallest(queue)
-
+  def navigate(map, target, [{_, current} | queue], risks) do
     cond do
       current == target ->
-        risk
+        risks[target]
 
       true ->
-        visited = MapSet.put(visited, current)
+        {risks, queue} =
+          for {neighbor, neighbor_risk} <- neighbors(map, current),
+              risk = risks[current] + neighbor_risk,
+              risk < Map.get(risks, neighbor),
+              reduce: {risks, queue} do
+            {risks, queue} ->
+              risks = Map.put(risks, neighbor, risk)
+              queue = enqueue(queue, neighbor, risk)
+              {risks, queue}
+          end
 
-        queue =
-          map
-          |> neighbors(current)
-          |> Enum.reduce(queue, fn {neighbor, neighbor_risk}, queue ->
-            if neighbor not in visited do
-              priority = neighbor_risk + risk
-              :gb_sets.add_element({priority, neighbor}, queue)
-            else
-              queue
-            end
-          end)
-
-        navigate(map, target, queue, visited)
+        navigate(map, target, queue, risks)
     end
+  end
+
+  defp enqueue([{current, _} | _] = queue, value, weight) when weight <= current do
+    [{weight, value} | queue]
+  end
+
+  defp enqueue([head | tail], value, weight) do
+    [head | enqueue(tail, value, weight)]
+  end
+
+  defp enqueue([], value, weight) do
+    [{weight, value}]
   end
 
   def expand(map, {xmax, ymax}) do
