@@ -1,31 +1,19 @@
 defmodule Aoc2021.Day17.Second do
-  def sol do
-    File.read!("./test/support/17/sol.txt")
-    |> String.split([" ", "\n"], trim: true)
-    |> Enum.map(fn x ->
-      x
-      |> String.split(",")
-      |> Enum.map(&String.to_integer/1)
-      |> List.to_tuple()
-    end)
-  end
-
   def run(tx, ty) do
+    ymin..ymax = ty
+
     ys =
-      ty
-      |> Enum.min()
+      ymin
       |> Stream.iterate(&(&1 + 1))
-      |> Stream.map(fn vy ->
-        {vy, trunc(step_estimate(vy, Enum.max(ty))),
-         trunc(:math.ceil(step_estimate(vy, Enum.min(ty))))}
+      |> Stream.take_while(fn vy ->
+        vy <= abs(ymin+1)
       end)
-      |> Stream.flat_map(fn {vy, step_min, step_max} ->
-        for step <- trunc(step_min)..trunc(:math.ceil(step_max)) do
-          {vy, step}
-        end
-      end)
-      |> Enum.take_while(fn {vy, steps} ->
-        vy <= 0 || steps < 1000
+      |> Stream.flat_map(fn vy ->
+        ymax..ymin
+        |> Enum.flat_map(fn y ->
+          step_estimate(vy, y)
+        end)
+        |> Enum.map(&{vy, &1})
       end)
       |> Enum.filter(fn {vy, steps} ->
         sy(vy, steps) in ty
@@ -40,7 +28,7 @@ defmodule Aoc2021.Day17.Second do
     |> length()
   end
 
-  def possible_voxs(steps, tx) do
+  def possible_voxs(steps, xmin.._xmax = tx) do
     # sx_min = steps*(v0x + vx)/2
     # 2*sx_min = steps * v0x + steps*vx
     # v0x = (2*sx_min-steps*vx)/steps
@@ -52,7 +40,7 @@ defmodule Aoc2021.Day17.Second do
     0
     |> Stream.iterate(&(&1 + 1))
     |> Stream.drop_while(fn vx ->
-      sx(vx, steps) < Enum.min(tx)
+      sx(vx, steps) < xmin
     end)
     |> Enum.take_while(fn vx ->
       sx(vx, steps) in tx
@@ -95,13 +83,17 @@ defmodule Aoc2021.Day17.Second do
 
     case delta do
       delta when delta < 0 ->
-        nil
+        []
 
       delta ->
         Enum.max([
           (-1 - 2 * vy + :math.sqrt(delta)) / -2,
           (-1 - 2 * vy - :math.sqrt(delta)) / -2
         ])
+        |> then(fn
+          n when trunc(n) == n -> [trunc(n)]
+          _other -> []
+        end)
     end
   end
 end
