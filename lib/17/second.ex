@@ -6,7 +6,7 @@ defmodule Aoc2021.Day17.Second do
       ymin
       |> Stream.iterate(&(&1 + 1))
       |> Stream.take_while(fn vy ->
-        vy <= abs(ymin+1)
+        vy <= abs(ymin + 1)
       end)
       |> Stream.flat_map(fn vy ->
         ymax..ymin
