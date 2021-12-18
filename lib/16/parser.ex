@@ -43,11 +43,8 @@ defmodule Aoc2021.Day16.Parser do
     {number <<< 4 ||| number_part, tail}
   end
 
-  def parse_operator(<<0::1, subpacket_length::15*1, tail::bits>>) do
-    <<subpacket_input::bits-size(subpacket_length), tail::bits>> = tail
-    subpackets = parse(subpacket_input, [])
-
-    {subpackets, tail}
+  def parse_operator(<<0::1, length::15*1, subpackets::size(length)-bits, tail::bits>>) do
+    {parse(subpackets, []), tail}
   end
 
   def parse_operator(<<1::1, subpackets::11*1, tail::bits>>) do
