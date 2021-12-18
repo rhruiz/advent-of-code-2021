@@ -1,21 +1,40 @@
 defmodule Aoc2021.Day17.First do
+  # Sy = S0y + V0*t + a/2*t**2
+  # a/2*t**2 + V0*t - Sy = 0
+  # roots = vy +/- :math.sqrt(delta)
+  def delta(vy, position) do
+    :math.sqrt(vy ** 2 - 4 * -0.5 * -position)
+  end
+
+  def step_estimate(vy, position) do
+    try do
+      Enum.max([vy + delta(vy, position), vy - delta(vy, position)])
+    rescue
+      ArithmeticError -> nil
+    end
+  end
+
+  def sy_estimate(v0y, steps) do
+    trunc(steps * (2 * v0y + (steps - 1) * -1) / 2)
+  end
+
   def run(tx, ty) do
     vy =
       1..100
       |> Enum.filter(fn vy ->
-        Stream.iterate({{0, 0}, {0, vy}}, fn {pos, delta} ->
-          step(pos, delta)
+        Stream.iterate(vy, &(&1 + 1))
+        |> Stream.map(fn vy ->
+          {vy, trunc(step_estimate(vy, Enum.max(ty))),
+           trunc(:math.ceil(step_estimate(vy, Enum.min(ty))))}
         end)
-        |> Stream.chunk_every(2, 1)
-        |> Stream.take_while(fn [_, {{_x2, y2}, _}] ->
-          y2 >= Enum.min(ty)
+        |> Stream.filter(fn {_vy, step_min, step_max} ->
+          step_min != nil || step_max != nil
         end)
-        |> Enum.any?(fn
-          [{{_x1, y1}, _}, {{_x2, y2}, _}] when y1 >= 0 and y2 < 0 ->
-            (y2 in ty)
-
-          _other -> false
+        |> Enum.take_while(fn {vy, step_min, step_max} ->
+          sy_estimate(vy, trunc(step_min)) in ty ||
+            sy_estimate(vy, trunc(:math.ceil(step_max))) in ty
         end)
+        |> length() > 0
       end)
       |> Enum.max_by(&max/1)
 
@@ -34,7 +53,7 @@ defmodule Aoc2021.Day17.First do
       end)
 
     if vx == nil do
-      raise "boom"
+      raise RuntimeError, "no vx is not possible for the given vy"
     end
 
     max(vy)
@@ -71,5 +90,5 @@ defmodule Aoc2021.Day17.First do
   end
 
   def dx(0), do: 0
-  def dx(dx), do: div(0-dx, abs(dx))
+  def dx(dx), do: div(0 - dx, abs(dx))
 end
