@@ -4,7 +4,7 @@ defmodule Aoc2021.Day20.First do
   @deltas for y <- -1..1, x <- -1..1, do: {x, y}
 
   defmodule Image do
-    defstruct [map: %{}, xmax: 0, ymax: 0, xmin: 0, ymin: 0, default: 0]
+    defstruct map: %{}, xmax: 0, ymax: 0, xmin: 0, ymin: 0, default: 0
   end
 
   def run(file) do
@@ -31,22 +31,31 @@ defmodule Aoc2021.Day20.First do
   end
 
   def enhance_image(image, algo) do
-    enhanced_image = %Image{xmax: image.xmax + 1, xmin: image.xmin - 1, ymax: image.ymax + 1, ymin: image.ymin - 1, default: rem(image.default + (algo >>> 511), 2)}
+    enhanced_image = %Image{
+      xmax: image.xmax + 1,
+      xmin: image.xmin - 1,
+      ymax: image.ymax + 1,
+      ymin: image.ymin - 1,
+      default: rem(image.default + (algo >>> 511), 2)
+    }
 
-    for x <- (image.xmin - 1)..(image.xmax + 1), y <- (image.ymin - 1)..(image.ymax + 1), pos <- [{x, y}], reduce: enhanced_image  do
+    for x <- (image.xmin - 1)..(image.xmax + 1),
+        y <- (image.ymin - 1)..(image.ymax + 1),
+        pos <- [{x, y}],
+        reduce: enhanced_image do
       enhanced_image -> put(enhanced_image, pos, enhance_pixel(image, algo, pos))
     end
   end
 
   def enhance_pixel(image, algo, position) do
     addr = algo_address(image, position)
-    (algo >>> (512 - addr - 1)) &&& 1
+    algo >>> (512 - addr - 1) &&& 1
   end
 
   def algo_address(image, {x, y}) do
     @deltas
     |> Enum.reduce(0, fn {dx, dy}, addr ->
-      (addr <<< 1) ||| at(image, {x + dx, y + dy})
+      addr <<< 1 ||| at(image, {x + dx, y + dy})
     end)
   end
 

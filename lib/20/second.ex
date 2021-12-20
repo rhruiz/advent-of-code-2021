@@ -11,4 +11,3 @@ defmodule Aoc2021.Day20.Second do
     |> light_count()
   end
 end
-
