@@ -34,11 +34,11 @@ defmodule Aoc2021.Day20.First do
     enhanced_image = %Image{xmax: image.xmax + 1, xmin: image.xmin - 1, ymax: image.ymax + 1, ymin: image.ymin - 1, default: rem(image.default + (algo >>> 511), 2)}
 
     for x <- (image.xmin - 1)..(image.xmax + 1), y <- (image.ymin - 1)..(image.ymax + 1), pos <- [{x, y}], reduce: enhanced_image  do
-      enhanced_image -> put(enhanced_image, pos, enchance_pixel(image, algo, pos))
+      enhanced_image -> put(enhanced_image, pos, enhance_pixel(image, algo, pos))
     end
   end
 
-  def enchance_pixel(image, algo, position) do
+  def enhance_pixel(image, algo, position) do
     addr = algo_address(image, position)
     (algo >>> (512 - addr - 1)) &&& 1
   end
