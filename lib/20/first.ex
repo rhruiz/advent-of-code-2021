@@ -55,7 +55,7 @@ defmodule Aoc2021.Day20.First do
   def algo_address(image, {x, y}) do
     @deltas
     |> Enum.reduce(0, fn {dx, dy}, addr ->
-      addr <<< 1 ||| at(image, {x + dx, y + dy})
+      addr * 2 + at(image, {x + dx, y + dy})
     end)
   end
 
@@ -75,8 +75,8 @@ defmodule Aoc2021.Day20.First do
       algo
       |> String.to_charlist()
       |> Enum.reduce(0, fn
-        ?#, number -> number <<< 1 ||| 1
-        ?., number -> number <<< 1
+        ?#, number -> number * 2 + 1
+        ?., number -> number * 2
         _, number -> number
       end)
 
