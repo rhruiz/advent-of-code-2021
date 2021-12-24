@@ -4,7 +4,8 @@ defmodule Aoc2021.Day24Test do
 
   describe "ALU" do
     test "first sample" do
-      alu = ALU.parse("""
+      alu =
+        ALU.parse("""
         inp x
         mul x -1
         """)
@@ -13,7 +14,8 @@ defmodule Aoc2021.Day24Test do
     end
 
     test "second sample" do
-      alu = ALU.parse("""
+      alu =
+        ALU.parse("""
         inp z
         inp x
         mul z 3
@@ -25,7 +27,8 @@ defmodule Aoc2021.Day24Test do
     end
 
     test "third sample" do
-      alu = ALU.parse("""
+      alu =
+        ALU.parse("""
         inp w
         add z w
         mod z 2
@@ -41,24 +44,24 @@ defmodule Aoc2021.Day24Test do
 
       for w <- 0..1, x <- 0..1, y <- 0..1, z <- 0..1 do
         assert [^w, ^x, ^y, ^z] =
-          alu
-          |> ALU.run([Integer.undigits([w, x, y, z], 2)])
-          |> Map.take([:w, :x, :y, :z])
-          |> Map.values()
+                 alu
+                 |> ALU.run([Integer.undigits([w, x, y, z], 2)])
+                 |> Map.take([:w, :x, :y, :z])
+                 |> Map.values()
       end
     end
   end
 
   test "first and second star" do
     {min, max} = First.run(input())
+
     alu =
       input()
       |> File.read!()
       |> ALU.parse()
 
-
     assert 0 = alu |> ALU.run(Integer.digits(min)) |> ALU.read(:z)
     assert 0 = alu |> ALU.run(Integer.digits(max)) |> ALU.read(:z)
-    assert {92171126131911, 99394899891971} = {min, max}
+    assert {92_171_126_131_911, 99_394_899_891_971} = {min, max}
   end
 end

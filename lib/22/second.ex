@@ -33,7 +33,7 @@ defmodule Aoc2021.Day22.Second do
 
   def do_subtract([afirst..alast | atail], [bfirst..blast | btail]) do
     leading = afirst..(bfirst - 1)//1
-    trailing = (blast+1)..alast//1
+    trailing = (blast + 1)..alast//1
 
     maybe_add = fn list, range ->
       if Enum.empty?(range) do
