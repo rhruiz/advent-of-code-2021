@@ -1,6 +1,33 @@
 defmodule Aoc2021.Day24.First do
   alias Aoc2021.Day24.ALU
 
+  def solve([], _, result) do
+    result
+  end
+
+  def solve([{{26, b, _}, index} | tail], [{last_index, last_c} | queue], result) do
+    diff = b + last_c
+
+    result =
+      if diff > 0 do
+        Map.merge(result, %{
+          last_index => {1, 9 - diff},
+          index => {1 + diff, 9}
+        })
+      else
+        Map.merge(result, %{
+          last_index => {1 - diff, 9},
+          index => {1, 9 + diff}
+        })
+      end
+
+    solve(tail, queue, result)
+  end
+
+  def solve([{{_, _, c}, index} | tail], queue, result) do
+    solve(tail, [{index, c} | queue], result)
+  end
+
   def run(file) do
     alu =
       file
@@ -9,37 +36,24 @@ defmodule Aoc2021.Day24.First do
 
     params =
       alu.instructions
-      |> Enum.chunk_every(18, 18)
-      |> Enum.map(fn b -> {Enum.at(b, 4), Enum.at(b, 5), Enum.at(b, 15)} end)
-      |> Enum.map(fn {[_, _, a], [_, _, b], [_, _, c]} ->
-        [a, b, c]
+      |> Enum.chunk_every(18)
+      |> Enum.map(fn block ->
+        [4, 5, 15]
+        |> Enum.map(&get_in(block, [Access.at(&1), Access.at(2)]))
         |> Enum.map(&String.to_integer/1)
         |> List.to_tuple()
       end)
 
-    f = fn {a, b, c}, z, w ->
-      if (rem(z, 26) + b) != w do
-        div(z, a) * 26 + w + c
-      else
-        div(z, a)
-      end
-    end
+    digit_map =
+      params
+      |> Enum.with_index()
+      |> solve([], %{})
 
-    Enum.reduce(params, %{0 => {0, 0}}, fn {a, _, _} = param, zs ->
-      Enum.reduce(zs, %{}, fn {z, {i1, i2}}, new_zs ->
-        Enum.reduce(1..9, new_zs, fn w, new_zs ->
-          newz = f.(param, z, w)
-
-          if a == 1 || (a == 26 && newz < z) do
-            Map.update(new_zs, newz, {i1 * 10 + w, i2 * 10 + w}, fn {a, b} ->
-              {min(a, i1 * 10 + w), max(b, i2 * 10 + w)}
-            end)
-          else
-            new_zs
-          end
-        end)
-      end)
+    0..13
+    |> Enum.map(&Map.get(digit_map, &1))
+    |> Enum.unzip()
+    |> then(fn {min, max} ->
+      {Integer.undigits(min), Integer.undigits(max)}
     end)
-    |> Map.get(0)
   end
 end
