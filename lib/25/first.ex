@@ -1,13 +1,13 @@
 defmodule Aoc2021.Day25.First do
   def run(file) do
-    grid = input(file)
+    {grid, easters, southers, bounds} = input(file)
 
     Stream.iterate(1, &(&1 + 1))
-    |> Stream.transform(grid, fn step, last_grid ->
-      {grid, changed} = step(last_grid)
+    |> Stream.transform({grid, easters, southers}, fn step, {last_grid, easters, southers} ->
+      {grid, easters, southers, changed} = step(last_grid, easters, southers, bounds)
 
       if changed do
-        {[step + 1], grid}
+        {[step + 1], {grid, easters, southers}}
       else
         {:halt, grid}
       end
@@ -16,85 +16,55 @@ defmodule Aoc2021.Day25.First do
     |> hd()
   end
 
-  def render(grid) do
-    grid
-    |> Map.keys()
-    |> Enum.sort_by(fn {x, y} -> {y, x} end)
-    |> Enum.reduce(0, fn {x, y}, last_y ->
-      if y != last_y do
-        IO.puts("")
-      end
+  def render(grid, {xmax, ymax}) do
+    Enum.each(0..ymax, fn y ->
+      Enum.each(0..xmax, fn x ->
+        IO.write([grid[{x, y}]])
+      end)
 
-      IO.write([Map.get(grid, {x, y})])
-
-      y
+      IO.puts("")
     end)
 
     IO.puts("\n")
   end
 
-  def step(grid) do
-    grid
-    |> Enum.reduce({%{}, false}, fn
-      {{x, y}, ?>}, {new_grid, changed} ->
-        cond do
-          grid[{x + 1, y}] == nil and grid[{0, y}] == ?. ->
-            {Map.merge(new_grid, %{
-               {x, y} => ?.,
-               {0, y} => ?>
-             }), true}
+  def step(grid, easters, southers, {xmax, ymax}) do
+    {grid, easters, changed} = move(grid, easters, &{rem(&1 + 1, xmax + 1), &2})
+    {grid, southers, changed2} = move(grid, southers, &{&1, rem(&2 + 1, ymax + 1)})
 
-          grid[{x + 1, y}] == ?. ->
-            {Map.merge(new_grid, %{
-               {x, y} => ?.,
-               {x + 1, y} => ?>
-             }), true}
+    {grid, easters, southers, changed || changed2}
+  end
 
-          true ->
-            {Map.put_new(new_grid, {x, y}, ?>), changed}
-        end
+  def move(grid, cukes, delta) do
+    Enum.reduce(cukes, {grid, [], false}, fn {x, y}, {new_grid, cukes, changed} ->
+      next = delta.(x, y)
 
-      {{x, y}, chr}, {new_grid, changed} ->
-        {Map.put_new(new_grid, {x, y}, chr), changed}
-    end)
-    |> then(fn {grid, changed} ->
-      Enum.reduce(grid, {%{}, changed}, fn
-        {{x, y}, ?v}, {new_grid, changed} ->
-          cond do
-            grid[{x, y + 1}] == nil and grid[{x, 0}] == ?. ->
-              {new_grid
-               |> Map.put({x, y}, ?.)
-               |> Map.put({x, 0}, ?v), true}
-
-            grid[{x, y + 1}] == ?. ->
-              {new_grid
-               |> Map.put({x, y}, ?.)
-               |> Map.put({x, y + 1}, ?v), true}
-
-            true ->
-              {Map.put_new(new_grid, {x, y}, ?v), changed}
-          end
-
-        {{x, y}, chr}, {new_grid, changed} ->
-          {Map.put_new(new_grid, {x, y}, chr), changed}
-      end)
+      if grid[next] == ?. do
+        {Map.merge(new_grid, %{{x, y} => ?., next => grid[{x, y}]}), [next | cukes], true}
+      else
+        {new_grid, [{x, y} | cukes], changed}
+      end
     end)
   end
 
   def input(file) do
     file
     |> File.stream!()
+    |> Stream.map(&String.trim_trailing/1)
+    |> Stream.map(&String.to_charlist/1)
     |> Stream.with_index()
-    |> Stream.map(fn {line, y} ->
-      line
-      |> String.trim_trailing()
-      |> String.to_charlist()
+    |> Enum.reduce({%{}, [], [], {0, 0}}, fn {xs, y}, {grid, easters, southers, bounds} ->
+      xs
       |> Stream.with_index()
-      |> then(&{&1, y})
-    end)
-    |> Enum.reduce(%{}, fn {xs, y}, grid ->
-      Enum.reduce(xs, grid, fn {chr, x}, grid ->
-        Map.put(grid, {x, y}, chr)
+      |> Enum.reduce({grid, easters, southers, bounds}, fn
+        {?., x}, {grid, easters, southers, _bounds} ->
+          {Map.put(grid, {x, y}, ?.), easters, southers, {x, y}}
+
+        {?>, x}, {grid, easters, southers, _bounds} ->
+          {Map.put(grid, {x, y}, ?>), [{x, y} | easters], southers, {x, y}}
+
+        {?v, x}, {grid, easters, southers, _bounds} ->
+          {Map.put(grid, {x, y}, ?v), easters, [{x, y} | southers], {x, y}}
       end)
     end)
   end
