@@ -4,12 +4,12 @@ defmodule Aoc2021.Day25.First do
 
     Stream.iterate(1, &(&1 + 1))
     |> Stream.transform(grid, fn step, last_grid ->
-      grid = step(last_grid)
+      {grid, changed} = step(last_grid)
 
-      if grid == last_grid do
-        {:halt, grid}
-      else
+      if changed do
         {[step + 1], grid}
+      else
+        {:halt, grid}
       end
     end)
     |> Enum.take(-1)
@@ -35,48 +35,48 @@ defmodule Aoc2021.Day25.First do
 
   def step(grid) do
     grid
-    |> Enum.reduce(%{}, fn
-      {{x, y}, ?>}, new_grid ->
+    |> Enum.reduce({%{}, false}, fn
+      {{x, y}, ?>}, {new_grid, changed} ->
         cond do
           grid[{x + 1, y}] == nil and grid[{0, y}] == ?. ->
-            Map.merge(new_grid, %{
-              {x, y} => ?.,
-              {0, y} => ?>
-            })
+            {Map.merge(new_grid, %{
+               {x, y} => ?.,
+               {0, y} => ?>
+             }), true}
 
           grid[{x + 1, y}] == ?. ->
-            Map.merge(new_grid, %{
-              {x, y} => ?.,
-              {x + 1, y} => ?>
-            })
+            {Map.merge(new_grid, %{
+               {x, y} => ?.,
+               {x + 1, y} => ?>
+             }), true}
 
           true ->
-            Map.put_new(new_grid, {x, y}, ?>)
+            {Map.put_new(new_grid, {x, y}, ?>), changed}
         end
 
-      {{x, y}, chr}, new_grid ->
-        Map.put_new(new_grid, {x, y}, chr)
+      {{x, y}, chr}, {new_grid, changed} ->
+        {Map.put_new(new_grid, {x, y}, chr), changed}
     end)
-    |> then(fn grid ->
-      Enum.reduce(grid, %{}, fn
-        {{x, y}, ?v}, new_grid ->
+    |> then(fn {grid, changed} ->
+      Enum.reduce(grid, {%{}, changed}, fn
+        {{x, y}, ?v}, {new_grid, changed} ->
           cond do
             grid[{x, y + 1}] == nil and grid[{x, 0}] == ?. ->
-              new_grid
-              |> Map.put({x, y}, ?.)
-              |> Map.put({x, 0}, ?v)
+              {new_grid
+               |> Map.put({x, y}, ?.)
+               |> Map.put({x, 0}, ?v), true}
 
             grid[{x, y + 1}] == ?. ->
-              new_grid
-              |> Map.put({x, y}, ?.)
-              |> Map.put({x, y + 1}, ?v)
+              {new_grid
+               |> Map.put({x, y}, ?.)
+               |> Map.put({x, y + 1}, ?v), true}
 
             true ->
-              Map.put_new(new_grid, {x, y}, ?v)
+              {Map.put_new(new_grid, {x, y}, ?v), changed}
           end
 
-        {{x, y}, chr}, new_grid ->
-          Map.put_new(new_grid, {x, y}, chr)
+        {{x, y}, chr}, {new_grid, changed} ->
+          {Map.put_new(new_grid, {x, y}, chr), changed}
       end)
     end)
   end
