@@ -59,7 +59,7 @@ defmodule Aoc2021.Day19.First do
     end)
   end
 
-  def rebase(base, %Scanner{coords: coords} = scanner) do
+  def rebase(%Scanner{coords: coords} = scanner, base) do
     %{scanner | coords: Enum.map(coords, fn coord -> rebase(base, coord) end)}
   end
 
@@ -77,12 +77,12 @@ defmodule Aoc2021.Day19.First do
 
   def matching(scanner, target) do
     Enum.find_value(scanner.coords, fn coord ->
-      scanner = rebase(coord, scanner)
+      scanner = rebase(scanner, coord)
       coords = MapSet.new(scanner.coords)
       {xs, ys, zs} = coord
 
       Enum.find_value(target.coords, fn tcoord ->
-        target = rebase(tcoord, target)
+        target = rebase(target, tcoord)
         {xt, yt, zt} = tcoord
 
         coords
@@ -94,28 +94,33 @@ defmodule Aoc2021.Day19.First do
     end)
   end
 
-  def find_rotations(scanners) do
-    Enum.reduce(scanners, %{}, fn scanner, pairs ->
-      scanners
-      |> Enum.reduce(pairs, fn target, pairs ->
-        cond do
-          target == scanner ->
-            pairs
+  def find_rotations(source, scanners) do
+    scanners
+    |> Enum.reduce(%{}, fn target, pairs ->
+      cond do
+        translation = matching(target, source) ->
+          Map.put(pairs, target, {nil, translation})
 
-          matching(scanner, target) ->
-            Map.put(pairs, {scanner, target}, [])
+        true ->
+          @rotations
+          |> Enum.reduce(nil, fn
+            rotation, nil ->
+              translation = matching(rotate(target, rotation), source)
 
-          true ->
-            @rotations
-            |> Enum.find(fn rotation ->
-              matching(scanner, rotate(target, rotation))
-            end)
-            |> then(fn
-              nil -> pairs
-              rotation -> Map.put(pairs, {scanner, target}, [rotation])
-            end)
-        end
-      end)
+              if translation != nil do
+                {translation, rotation}
+              else
+                nil
+              end
+
+            _rotation, result ->
+              result
+          end)
+          |> then(fn
+            nil -> pairs
+            {translation, rotation} -> Map.put(pairs, target, {rotation, translation})
+          end)
+      end
     end)
   end
 
@@ -123,16 +128,35 @@ defmodule Aoc2021.Day19.First do
     scanners = file |> input()
 
 
-    {scanners,
-    scanners
-    |> find_rotations()
-    |> Enum.sort_by(fn {key, _} ->
-      key
-      |> Tuple.to_list()
-      |> Enum.map(&(&1.id))
-      |> Enum.min()
-    end)}
+    {[first], tail} = Enum.split_with(scanners, &match?(%{id: 0}, &1))
+
+    build_graph([first | tail], %{})
   end
+
+
+  def build_graph([], graph), do: graph
+
+  def build_graph([source | tail], graph) do
+    rotations = find_rotations(source, tail)
+
+    graph = Enum.reduce(rotations, graph, fn {target, rotations}, graph ->
+      Map.put(graph, {source.id, target.id}, rotations)
+    end)
+
+    build_graph(tail, graph)
+  end
+
+
+#     {scanners,
+#     scanners
+#     |> find_rotations()
+#     |> Enum.sort_by(fn {key, _} ->
+#       key
+#       |> Tuple.to_list()
+#       |> Enum.map(&(&1.id))
+#       |> Enum.min()
+#     end)}
+  # end
 
   def run1(scanners, rotations) do
     scanner_by_id = Enum.into(scanners, %{}, &{&1.id, &1})
@@ -150,7 +174,7 @@ defmodule Aoc2021.Day19.First do
       |> Enum.reduce(scanner, fn {rotations, translate}, scanner ->
         rotations
         |> Enum.reduce(scanner, &rotate(&2, &1))
-        |> then(&rebase(translate, &1))
+        |> then(&rebase(&1, translate))
       end)
       |> Map.get(:coords)
       |> MapSet.new()
