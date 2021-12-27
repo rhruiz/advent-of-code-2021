@@ -72,109 +72,39 @@ defmodule Aoc2021.Day19.First do
   end
 
   def rotate(%Scanner{coords: coords} = scanner, rotation) do
-    %{scanner | coords: Enum.map(coords, fn coord -> rotate(coord, rotation) end)}
+    %{scanner | coords: Enum.map(coords, &rotate(&1, rotation))}
   end
 
-  def matching(scanner, target) do
-    Enum.find_value(scanner.coords, fn coord ->
-      scanner = rebase(scanner, coord)
-      coords = MapSet.new(scanner.coords)
-      {xs, ys, zs} = coord
-
-      Enum.find_value(target.coords, fn tcoord ->
-        target = rebase(target, tcoord)
-        {xt, yt, zt} = tcoord
-
-        coords
-        |> MapSet.intersection(MapSet.new(target.coords))
-        |> MapSet.size()
-        |> Kernel.>=(12)
-        |> if(do: {xt - xs, yt - ys, zt - zs}, else: false)
-      end)
-    end)
+  def add(%Scanner{coords: coords} = scanner, translation) do
+    %{scanner | coords: Enum.map(coords, &add(&1, translation))}
   end
 
-  def find_rotations(source, scanners) do
-    scanners
-    |> Enum.reduce(%{}, fn target, pairs ->
-      cond do
-        translation = matching(target, source) ->
-          Map.put(pairs, target, {nil, translation})
+  def add({a, b, c}, {d, e, f}) do
+    {d + a, e + b, f + c}
+  end
 
-        true ->
-          @rotations
-          |> Enum.reduce(nil, fn
-            rotation, nil ->
-              translation = matching(rotate(target, rotation), source)
-
-              if translation != nil do
-                {translation, rotation}
-              else
-                nil
-              end
-
-            _rotation, result ->
-              result
-          end)
-          |> then(fn
-            nil -> pairs
-            {translation, rotation} -> Map.put(pairs, target, {rotation, translation})
-          end)
-      end
-    end)
+  def diff({xa, ya, za}, {xb, yb, zb}) do
+    {xb - xa, yb - ya, zb - za}
   end
 
   def run(file) do
     scanners = file |> input()
 
+    scanners_by_id = Enum.into(scanners, %{}, &{&1.id, &1})
 
-    {[first], tail} = Enum.split_with(scanners, &match?(%{id: 0}, &1))
-
-    build_graph([first | tail], %{})
-  end
-
-
-  def build_graph([], graph), do: graph
-
-  def build_graph([source | tail], graph) do
-    rotations = find_rotations(source, tail)
-
-    graph = Enum.reduce(rotations, graph, fn {target, rotations}, graph ->
-      Map.put(graph, {source.id, target.id}, rotations)
+    scanners
+    |> build_graph()
+    |> Enum.reduce(%{0 => []}, fn {{from, to}, tx}, txs ->
+      Map.put(txs, to, [tx | txs[from]])
     end)
+    |> Enum.reduce(MapSet.new(), fn {id, txs}, beacons ->
+      scanner = scanners_by_id[id]
 
-    build_graph(tail, graph)
-  end
-
-
-#     {scanners,
-#     scanners
-#     |> find_rotations()
-#     |> Enum.sort_by(fn {key, _} ->
-#       key
-#       |> Tuple.to_list()
-#       |> Enum.map(&(&1.id))
-#       |> Enum.min()
-#     end)}
-  # end
-
-  def run1(scanners, rotations) do
-    scanner_by_id = Enum.into(scanners, %{}, &{&1.id, &1})
-
-    rotations
-    |> find_transformations([], %{0 => []})
-    |> IO.inspect()
-    |> tap(fn transformations ->
-      Map.map(transformations, fn {k, v} -> length(v) end) |> IO.inspect()
-    end)
-    |> Enum.reduce(MapSet.new, fn {id, transformations}, beacons ->
-      scanner = Map.get(scanner_by_id, id)
-
-      transformations
-      |> Enum.reduce(scanner, fn {rotations, translate}, scanner ->
-        rotations
-        |> Enum.reduce(scanner, &rotate(&2, &1))
-        |> then(&rebase(&1, translate))
+      txs
+      |> Enum.reduce(scanner, fn {translation, rotation}, scanner ->
+        scanner
+        |> rotate(rotation)
+        |> add(translation)
       end)
       |> Map.get(:coords)
       |> MapSet.new()
@@ -183,34 +113,45 @@ defmodule Aoc2021.Day19.First do
     |> MapSet.size()
   end
 
-  def find_transformations([], [], transformations) do
-    transformations
+  def build_graph(scanners) do
+    {[first], tail} = Enum.split_with(scanners, &match?(%{id: 0}, &1))
+    build_graph([first], MapSet.new(tail), [])
   end
 
-  def find_transformations([], [item | queue], transformations) do
-    find_transformations([item], queue, transformations)
+  def build_graph([], _, graph), do: Enum.reverse(graph)
+
+  def build_graph([source | tail], left, graph) do
+    left = Enum.reduce([source | tail], left, &MapSet.delete(&2, &1))
+
+    edges =
+      Enum.flat_map(left, fn scanner ->
+        tx = find_transformation(source, scanner)
+        if(tx, do: [{scanner, tx}], else: [])
+      end)
+
+    graph =
+      Enum.reduce(edges, graph, fn {target, transformation}, graph ->
+        [{{source.id, target.id}, transformation} | graph]
+      end)
+
+    queue = Enum.map(edges, &elem(&1, 0))
+
+    build_graph(queue ++ tail, left, graph)
   end
 
-  def find_transformations([{{a, b}, rotations} | tail], queue, transformations) do
-    b = Enum.reduce(rotations, b, &rotate(&2, &1))
-
-    cond do
-      Map.has_key?(transformations, a.id) ->
-        translate = matching(a, b) || matching(b, a)
-        existing = Map.get(transformations, a.id)
-        transformations = Map.put(transformations, b.id, [{rotations, translate} | existing])
-
-        find_transformations(tail, queue, transformations)
-
-      Map.has_key?(transformations, b.id) ->
-        translate = matching(b, a) || matching(a, b)
-        existing = Map.get(transformations, b.id)
-        transformations = Map.put(transformations, a.id, [{rotations, translate} | existing])
-
-        find_transformations(tail, queue, transformations)
-
-      true ->
-        find_transformations(tail, queue ++ [{{a, b}, rotations}], transformations)
-    end
+  def find_transformation(source, scanner) do
+    Enum.find_value(@rotations, fn rotation ->
+      scanner
+      |> rotate(rotation)
+      |> Map.get(:coords)
+      |> Enum.flat_map(&Enum.map(source.coords, fn p2 -> diff(&1, p2) end))
+      |> Enum.frequencies()
+      |> Enum.filter(fn {_, count} -> count >= 12 end)
+      |> Enum.map(fn {translation, _} -> {translation, rotation} end)
+      |> then(fn
+        [head] -> head
+        _ -> false
+      end)
+    end)
   end
 end
