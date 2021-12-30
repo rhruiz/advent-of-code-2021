@@ -68,27 +68,34 @@ defmodule Aoc2021.Day23.First do
   end
 
   def render(map) do
+    render_line = fn x, y ->
+      case Map.get(map, {x, y}) do
+        nil -> [?.]
+        {chr, _moves} -> [chr]
+        chr -> [chr]
+      end
+      |> IO.write()
+    end
+
     IO.puts("#############")
     IO.write("#")
 
-    Enum.each(1..11, fn x ->
-      map |> Map.get({x, 1}, {?., 0}) |> elem(0) |> List.wrap() |> IO.write()
-    end)
+    Enum.each(1..11, fn x -> render_line.(x, 1) end)
 
     IO.puts("#")
 
     Enum.each(2..@ymax, fn y ->
-      IO.write("##")
+      IO.write(if(y < 3, do: "##", else: "  "))
 
       Enum.each(2..10, fn
         x when rem(x, 2) == 0 -> IO.write("#")
-        x -> map |> Map.get({x, y}, {?., 0}) |> elem(0) |> List.wrap() |> IO.write()
+        x -> render_line.(x, y)
       end)
 
-      IO.puts("##")
+      IO.puts(if(y < 3, do: "##", else: "  "))
     end)
 
-    IO.puts("#############")
+    IO.puts("  #########")
   end
 
   defp enqueue([{current, _} | _] = queue, value, weight) when weight <= current do
@@ -147,8 +154,7 @@ defmodule Aoc2021.Day23.First do
   end
 
   def neighbors(current) do
-    for {from, {type, moves}} <- current,
-        moves < 2,
+    for {from, {type, moves}} when moves < 2 <- current,
         map = Map.delete(current, from),
         dest <- next_moves(type, from, map) do
       {Map.put(map, dest, {type, moves + 1}), distance(from, dest) * energy(type)}
