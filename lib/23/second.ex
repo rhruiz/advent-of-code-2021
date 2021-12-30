@@ -26,7 +26,6 @@ defmodule Aoc2021.Day23.Second do
   end
 
   def navigate(map) do
-    map = Map.map(map, fn {_, v} -> {v, 0} end)
     navigate(enqueue([], map, 0), MapSet.new())
   end
 
@@ -61,14 +60,14 @@ defmodule Aoc2021.Day23.Second do
     in_room_for_type(pos, type) && !strangers_in_the_room(map, type)
   end
 
-  def final_destination(map, {pos, {type, _moves}}) do
+  def final_destination(map, {pos, type}) do
     final_destination(map, pos, type)
   end
 
   def strangers_in_the_room(map, type) do
     x = room_x(type)
 
-    Enum.any?(2..@ymax, fn y -> Map.get(map, {x, y}, {type, 0}) |> elem(0) != type end)
+    Enum.any?(2..@ymax, fn y -> Map.get(map, {x, y}, type) != type end)
   end
 
   def in_hallway({_x, y}), do: y == 1
@@ -86,19 +85,10 @@ defmodule Aoc2021.Day23.Second do
   end
 
   def render(map) do
-    render_line = fn x, y ->
-      case Map.get(map, {x, y}) do
-        nil -> [?.]
-        {chr, _moves} -> [chr]
-        chr -> [chr]
-      end
-      |> IO.write()
-    end
-
     IO.puts("#############")
     IO.write("#")
 
-    Enum.each(1..11, fn x -> render_line.(x, 1) end)
+    Enum.each(1..11, fn x -> map |> Map.get({x, 1}, ?.) |> List.wrap() |> IO.write() end)
 
     IO.puts("#")
 
@@ -107,7 +97,7 @@ defmodule Aoc2021.Day23.Second do
 
       Enum.each(2..10, fn
         x when rem(x, 2) == 0 -> IO.write("#")
-        x -> render_line.(x, y)
+        x -> map |> Map.get({x, y}, ?.) |> List.wrap() |> IO.write()
       end)
 
       IO.puts(if(y < 3, do: "##", else: "  "))
@@ -172,10 +162,10 @@ defmodule Aoc2021.Day23.Second do
   end
 
   def neighbors(current) do
-    for {from, {type, moves}} when moves < 2 <- current,
+    for {from, type} <- current,
         map = Map.delete(current, from),
         dest <- next_moves(type, from, map) do
-      {Map.put(map, dest, {type, moves + 1}), distance(from, dest) * energy(type)}
+      {Map.put(map, dest, type), distance(from, dest) * energy(type)}
     end
   end
 
