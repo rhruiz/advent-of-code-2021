@@ -1,10 +1,28 @@
-defmodule Aoc2021.Day23.First do
-  @ymax 3
+defmodule Aoc2021.Day23.Second do
+  @ymax 5
 
   def run(file) do
     file
     |> input()
+    |> expand()
     |> navigate()
+  end
+
+  def expand(map) do
+    Map.merge(map, %{
+      {3, 3} => ?D,
+      {3, 4} => ?D,
+      {3, 5} => map[{3, 3}],
+      {5, 3} => ?C,
+      {5, 4} => ?B,
+      {5, 5} => map[{5, 3}],
+      {7, 3} => ?B,
+      {7, 4} => ?A,
+      {7, 5} => map[{7, 3}],
+      {9, 3} => ?A,
+      {9, 4} => ?C,
+      {9, 5} => map[{9, 3}]
+    })
   end
 
   def navigate(map) do
