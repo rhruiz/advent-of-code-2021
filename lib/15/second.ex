@@ -10,10 +10,12 @@ defmodule Aoc2021.Day15.Second do
 
   def navigate(map, target) do
     risks = %{{0, 0} => 0}
-    navigate(map, target, [{0, {0, 0}}], risks)
+    navigate(map, target, enqueue(:gb_sets.new(), {0, 0}, 0), risks)
   end
 
-  def navigate(map, target, [{_, current} | queue], risks) do
+  def navigate(map, target, queue, risks) do
+    {{_, current}, queue} = :gb_sets.take_smallest(queue)
+
     cond do
       current == target ->
         risks[target]
@@ -34,16 +36,8 @@ defmodule Aoc2021.Day15.Second do
     end
   end
 
-  defp enqueue([{current, _} | _] = queue, value, weight) when weight <= current do
-    [{weight, value} | queue]
-  end
-
-  defp enqueue([head | tail], value, weight) do
-    [head | enqueue(tail, value, weight)]
-  end
-
-  defp enqueue([], value, weight) do
-    [{weight, value}]
+  def enqueue(queue, value, weight) do
+    :gb_sets.add({weight, value}, queue)
   end
 
   def expand(map, {xmax, ymax}) do
