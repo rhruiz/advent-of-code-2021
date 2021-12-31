@@ -1,5 +1,9 @@
 defmodule Aoc2021.Day23.Second do
   @ymax 5
+  @solved for x <- 3..9//2,
+              y <- 2..@ymax,
+              reduce: %{},
+              do: (map -> Map.put(map, {x, y}, ?A + div(x, 2) - 1))
 
   def run(file) do
     file
@@ -33,7 +37,7 @@ defmodule Aoc2021.Day23.Second do
     {{current_energy, current}, queue} = :gb_sets.take_smallest(queue)
 
     cond do
-      Enum.all?(current, &final_destination(current, &1)) ->
+      final_destination(current) ->
         current_energy
 
       MapSet.member?(visited, current) ->
@@ -58,12 +62,10 @@ defmodule Aoc2021.Day23.Second do
     Enum.all?(xo..xt, fn x -> x == xo or map[{x, 1}] == nil end)
   end
 
+  def final_destination(map), do: map == @solved
+
   def final_destination(map, pos, type) do
     in_room_for_type(pos, type) && !strangers_in_the_room(map, type)
-  end
-
-  def final_destination(map, {pos, type}) do
-    final_destination(map, pos, type)
   end
 
   def strangers_in_the_room(map, type) do
@@ -124,14 +126,14 @@ defmodule Aoc2021.Day23.Second do
       map[{x, y - 1}] != nil ->
         []
 
-      # in hallway, with a clear path do destination room
-      in_hallway(from) and hallway_clear(map, x, xt) and !strangers_in_the_room(map, type) ->
-        yt = free_y(map, xt)
-
-        [{xt, yt}]
-
       in_hallway(from) ->
-        []
+        if hallway_clear(map, x, xt) and !strangers_in_the_room(map, type) do
+          yt = free_y(map, xt)
+
+          [{xt, yt}]
+        else
+          []
+        end
 
       # in room, move to hallway
       true ->

@@ -50,10 +50,6 @@ defmodule Aoc2021.Day23.First do
     in_room_for_type(pos, type) && !strangers_in_the_room(map, type)
   end
 
-  def final_destination(map, {pos, type}) do
-    final_destination(map, pos, type)
-  end
-
   def strangers_in_the_room(map, type) do
     x = room_x(type)
 
