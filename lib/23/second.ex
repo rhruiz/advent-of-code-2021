@@ -26,10 +26,12 @@ defmodule Aoc2021.Day23.Second do
   end
 
   def navigate(map) do
-    navigate(enqueue([], map, 0), MapSet.new())
+    navigate(enqueue(:gb_sets.new(), map, 0), MapSet.new())
   end
 
-  def navigate([{current_energy, current} | queue], visited) do
+  def navigate(queue, visited) do
+    {{current_energy, current}, queue} = :gb_sets.take_smallest(queue)
+
     cond do
       Enum.all?(current, &final_destination(current, &1)) ->
         current_energy
@@ -106,16 +108,8 @@ defmodule Aoc2021.Day23.Second do
     IO.puts("  #########")
   end
 
-  defp enqueue([{current, _} | _] = queue, value, weight) when weight <= current do
-    [{weight, value} | queue]
-  end
-
-  defp enqueue([head | tail], value, weight) do
-    [head | enqueue(tail, value, weight)]
-  end
-
-  defp enqueue([], value, weight) do
-    [{weight, value}]
+  defp enqueue(queue, value, weight) do
+    :gb_sets.add({weight, value}, queue)
   end
 
   def next_moves(type, {x, y} = from, map) do
