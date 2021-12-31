@@ -1,7 +1,9 @@
 defmodule Aoc2021.Day23.First do
   @ymax 3
-  @solved for x <- 3..9//2, y <- 2..@ymax, reduce: %{}, do: (
-    map -> Map.put(map, {x, y}, ?A + div(x, 2) - 1))
+  @solved for x <- 3..9//2,
+              y <- 2..@ymax,
+              reduce: %{},
+              do: (map -> Map.put(map, {x, y}, ?A + div(x, 2) - 1))
 
   def run(file) do
     file
@@ -10,7 +12,7 @@ defmodule Aoc2021.Day23.First do
   end
 
   def navigate(map) do
-    navigate(enqueue(:gb_sets.new, map, 0), MapSet.new())
+    navigate(enqueue(:gb_sets.new(), map, 0), MapSet.new())
   end
 
   def navigate(queue, visited) do
